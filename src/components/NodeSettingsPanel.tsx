@@ -103,6 +103,7 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
   const removeCustomPrice = useFlowStore((s) => s.removeCustomPrice);
   const setCustomDuration = useFlowStore((s) => s.setCustomDuration);
   const removeCustomDuration = useFlowStore((s) => s.removeCustomDuration);
+  const updateNodeData = useFlowStore((s) => s.updateNodeData);
 
   const node = nodes.find((n) => n.id === nodeId);
   const defId = node?.data?.defId as string | undefined;
@@ -129,9 +130,26 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
   return (
     <div className="border-t border-gray-200 p-3">
       <h3 className="text-sm font-bold text-gray-700 mb-2">ノード設定</h3>
-      <div className="text-xs text-gray-500 mb-1">{def.label}</div>
       <div className="text-xs text-gray-400 mb-2">
-        課金タイプ: {BILLING_LABELS[def.billing]}
+        定義: {def.label} / 課金タイプ: {BILLING_LABELS[def.billing]}
+      </div>
+      <div className="mb-2">
+        <label className="text-xs text-gray-600 block mb-1">表示ラベル</label>
+        <input
+          type="text"
+          value={(node.data?.customLabel as string) ?? ''}
+          onChange={(e) => updateNodeData(node.id, { customLabel: e.target.value || undefined })}
+          placeholder={def.label}
+          className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
+        />
+        {(node.data?.customLabel as string) && (
+          <button
+            onClick={() => updateNodeData(node.id, { customLabel: undefined })}
+            className="text-xs text-blue-500 hover:underline mt-1"
+          >
+            デフォルトに戻す ({def.label})
+          </button>
+        )}
       </div>
 
       {def.billing !== 'free' && (

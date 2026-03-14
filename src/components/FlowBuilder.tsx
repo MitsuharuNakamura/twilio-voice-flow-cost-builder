@@ -130,13 +130,14 @@ export function FlowBuilder() {
       ...node,
       data: {
         ...node.data,
-        label: def.label,
+        label: (node.data?.customLabel as string) || def.label,
         category: def.category,
         billing: def.billing,
         unitPrice: customPrices[node.id] ?? def.unitPrice,
         hasCustomPrice,
         hasCustomDuration,
         customDurationMinutes: customDurations[node.id],
+        customLabel: node.data?.customLabel,
       },
     };
   });
