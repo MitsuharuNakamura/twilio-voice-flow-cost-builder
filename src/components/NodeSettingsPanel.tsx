@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useFlowStore } from '../store/flowStore';
 import { BILLING_LABELS } from '../data/nodeDefinitions';
-import type { ShapeNodeData, ShapeType } from './nodes/ShapeNode';
+import type { ShapeNodeData } from './nodes/ShapeNode';
 import { SHAPE_DEFAULTS } from './nodes/ShapeNode';
 
 function ColorInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {

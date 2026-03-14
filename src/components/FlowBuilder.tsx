@@ -13,7 +13,7 @@ import {
 import { useFlowStore } from '../store/flowStore';
 import type { NodeDefinition } from '../data/nodeDefinitions';
 import { TwilioNode } from './nodes/TwilioNode';
-import { ShapeNode, SHAPE_DEFAULTS, type ShapeType, type ShapeNodeData } from './nodes/ShapeNode';
+import { ShapeNode, SHAPE_DEFAULTS, type ShapeType } from './nodes/ShapeNode';
 
 const nodeTypes: NodeTypes = {
   twilioNode: TwilioNode,
@@ -240,7 +240,7 @@ export function FlowBuilder() {
         nodeType: 'shape',
         shape,
         ...defaults,
-      } as ShapeNodeData,
+      } as unknown as Record<string, unknown>,
     };
     addNode(node);
   };

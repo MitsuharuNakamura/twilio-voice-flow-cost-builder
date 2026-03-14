@@ -3,7 +3,6 @@ import { useFlowStore } from '../store/flowStore';
 import {
   CATEGORY_COLORS,
   DEFAULT_CATEGORY_COLOR,
-  BILLING_LABELS,
   BILLING_OPTIONS,
   type BillingType,
 } from '../data/nodeDefinitions';

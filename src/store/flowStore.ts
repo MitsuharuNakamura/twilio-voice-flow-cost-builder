@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist, type StorageValue } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import {
   type Node,
   type Edge,
