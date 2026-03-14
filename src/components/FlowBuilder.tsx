@@ -58,7 +58,7 @@ interface TemplateConfig {
 const TEMPLATES: Record<string, TemplateConfig> = {
   basicForward: {
     label: '受電: 基本転送',
-    nodes: ['caller', 'nttcom', 'tw050', 'studio', 'fwdfx', 'fwdmb'],
+    nodes: ['caller', 'nttcom', 'tw050', 'studio', 'twout_fx', 'twout_mb'],
     edges: [
       [0, 1], [1, 2], [2, 3], [3, 4], [3, 5],
     ],
