@@ -10,7 +10,7 @@ import {
   applyEdgeChanges,
   addEdge,
 } from '@xyflow/react';
-import { DEFAULT_NODE_DEFINITIONS, type NodeDefinition } from '../data/nodeDefinitions';
+import { DEFAULT_NODE_DEFINITIONS, type NodeDefinition, type TtsConfig } from '../data/nodeDefinitions';
 import type { Language } from '../i18n/translations';
 
 export interface SavedFlow {
@@ -19,6 +19,7 @@ export interface SavedFlow {
   edges: Edge[];
   customPrices: Record<string, number>;
   customDurations: Record<string, number>;
+  ttsConfigs?: Record<string, TtsConfig>;
   savedAt: number;
 }
 
@@ -50,6 +51,7 @@ interface FlowState {
   language: Language;
   customPrices: Record<string, number>;
   customDurations: Record<string, number>;
+  ttsConfigs: Record<string, TtsConfig>;
 
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
@@ -69,6 +71,8 @@ interface FlowState {
   removeCustomPrice: (instanceId: string) => void;
   setCustomDuration: (instanceId: string, minutes: number) => void;
   removeCustomDuration: (instanceId: string) => void;
+  setTtsConfig: (instanceId: string, config: TtsConfig) => void;
+  removeTtsConfig: (instanceId: string) => void;
   addNodeDefinition: (def: NodeDefinition) => void;
   updateNodeDefinition: (id: string, updates: Partial<Omit<NodeDefinition, 'id'>>) => void;
   deleteNodeDefinition: (id: string) => void;
@@ -109,6 +113,7 @@ export const useFlowStore = create<FlowState>()(
       language: 'ja' as Language,
       customPrices: {},
       customDurations: {},
+      ttsConfigs: {},
 
       onNodesChange: (changes) => {
         set({ nodes: applyNodeChanges(changes, get().nodes) });
@@ -147,6 +152,12 @@ export const useFlowStore = create<FlowState>()(
         const { [instanceId]: _, ...rest } = get().customDurations;
         set({ customDurations: rest });
       },
+      setTtsConfig: (instanceId, config) =>
+        set({ ttsConfigs: { ...get().ttsConfigs, [instanceId]: config } }),
+      removeTtsConfig: (instanceId) => {
+        const { [instanceId]: _, ...rest } = get().ttsConfigs;
+        set({ ttsConfigs: rest });
+      },
       addNodeDefinition: (def) =>
         set({ nodeDefinitions: [...get().nodeDefinitions, def] }),
       updateNodeDefinition: (id, updates) =>
@@ -165,9 +176,9 @@ export const useFlowStore = create<FlowState>()(
         set({ nodeDefinitions: [...DEFAULT_NODE_DEFINITIONS] }),
       getSavedFlows: () => loadSavedFlows(),
       saveCurrentFlow: (name) => {
-        const { nodes, edges, customPrices, customDurations } = get();
+        const { nodes, edges, customPrices, customDurations, ttsConfigs } = get();
         const flows = loadSavedFlows();
-        flows.push({ name, nodes, edges, customPrices, customDurations, savedAt: Date.now() });
+        flows.push({ name, nodes, edges, customPrices, customDurations, ttsConfigs, savedAt: Date.now() });
         persistSavedFlows(flows);
       },
       loadSavedFlow: (index) => {
@@ -179,6 +190,7 @@ export const useFlowStore = create<FlowState>()(
           edges: flow.edges,
           customPrices: flow.customPrices || {},
           customDurations: flow.customDurations || {},
+          ttsConfigs: flow.ttsConfigs || {},
           selectedNodeId: null,
         });
       },
@@ -194,7 +206,7 @@ export const useFlowStore = create<FlowState>()(
           ),
         }),
       clearAll: () =>
-        set({ nodes: [], edges: [], selectedNodeId: null, customPrices: {}, customDurations: {} }),
+        set({ nodes: [], edges: [], selectedNodeId: null, customPrices: {}, customDurations: {}, ttsConfigs: {} }),
     }),
     {
       name: 'twilio-cost-calc',

@@ -1,5 +1,6 @@
 import type { Node } from '@xyflow/react';
 import type { NodeDefinition } from '../data/nodeDefinitions';
+import { getTtsRatePerBlock, type TtsConfig } from '../data/nodeDefinitions';
 
 export interface CostLineItem {
   nodeId: string;
@@ -12,6 +13,7 @@ export interface CostLineItem {
   twilioUrl?: string;
   customPrice?: number;
   customDuration?: number;
+  ttsConfig?: TtsConfig;
 }
 
 export function calculateCosts(
@@ -21,6 +23,7 @@ export function calculateCosts(
   customPrices: Record<string, number>,
   customDurations: Record<string, number>,
   getNodeDefinition: (defId: string) => NodeDefinition | undefined,
+  ttsConfigs?: Record<string, TtsConfig>,
 ): { items: CostLineItem[]; total: number; perCall: number } {
   const items: CostLineItem[] = [];
 
@@ -34,6 +37,7 @@ export function calculateCosts(
     const unitPrice = customPrices[node.id] ?? def.unitPrice;
     const minutes = customDurations[node.id] ?? avgCallMinutes;
     let monthlyCost = 0;
+    const ttsConfig = ttsConfigs?.[node.id];
 
     switch (def.billing) {
       case 'per_minute':
@@ -45,6 +49,15 @@ export function calculateCosts(
       case 'custom':
         monthlyCost = unitPrice * monthlyCallCount;
         break;
+      case 'tts': {
+        if (ttsConfig) {
+          const blocks = Math.ceil(ttsConfig.chars / 100) || 0;
+          const totalMonthlyChars = ttsConfig.chars * monthlyCallCount;
+          const ratePerBlock = getTtsRatePerBlock(ttsConfig.ttsType, totalMonthlyChars);
+          monthlyCost = blocks * ratePerBlock * monthlyCallCount;
+        }
+        break;
+      }
       case 'free':
       default:
         monthlyCost = 0;
@@ -62,6 +75,7 @@ export function calculateCosts(
       twilioUrl: def.twilioUrl,
       customPrice: customPrices[node.id] !== undefined ? customPrices[node.id] : undefined,
       customDuration: customDurations[node.id] !== undefined ? customDurations[node.id] : undefined,
+      ttsConfig,
     });
   }
 

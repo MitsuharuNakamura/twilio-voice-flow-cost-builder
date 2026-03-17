@@ -1,7 +1,7 @@
 import { MarkerType } from '@xyflow/react';
 import { useFlowStore } from '../store/flowStore';
 import { calculateCosts } from '../utils/costCalculator';
-import { BILLING_LABELS, type BillingType } from '../data/nodeDefinitions';
+import { BILLING_LABELS, TTS_TYPE_LABELS, type BillingType } from '../data/nodeDefinitions';
 import { NodeSettingsPanel } from './NodeSettingsPanel';
 import { useI18n } from '../i18n';
 
@@ -10,6 +10,7 @@ const BILLING_BADGE_COLORS: Record<BillingType, string> = {
   per_call: 'bg-green-100 text-green-700',
   free: 'bg-gray-100 text-gray-500',
   custom: 'bg-orange-100 text-orange-700',
+  tts: 'bg-purple-100 text-purple-700',
 };
 
 const ARROW_MARKER = { type: MarkerType.ArrowClosed as const, width: 16, height: 16 };
@@ -75,10 +76,11 @@ export function CostPanel() {
   const setCurrency = useFlowStore((s) => s.setCurrency);
   const setExchangeRate = useFlowStore((s) => s.setExchangeRate);
   const setSelectedNodeId = useFlowStore((s) => s.setSelectedNodeId);
+  const ttsConfigs = useFlowStore((s) => s.ttsConfigs);
 
   const { t } = useI18n();
 
-  const { items, total, perCall } = calculateCosts(nodes, monthlyCallCount, avgCallMinutes, customPrices, customDurations, getNodeDef);
+  const { items, total, perCall } = calculateCosts(nodes, monthlyCallCount, avgCallMinutes, customPrices, customDurations, getNodeDef, ttsConfigs);
 
   const formatPrice = (usd: number) => {
     if (currency === 'JPY') {
@@ -178,6 +180,11 @@ export function CostPanel() {
                   {item.customDuration !== undefined && item.billing === 'per_minute' && (
                     <span className="px-1 py-0.5 rounded text-[10px] shrink-0 bg-indigo-50 text-indigo-600">
                       {item.customDuration}{t('min')}
+                    </span>
+                  )}
+                  {item.ttsConfig && item.billing === 'tts' && (
+                    <span className="px-1 py-0.5 rounded text-[10px] shrink-0 bg-purple-50 text-purple-600">
+                      {TTS_TYPE_LABELS[item.ttsConfig.ttsType]} / {item.ttsConfig.chars.toLocaleString()}chars
                     </span>
                   )}
                   {item.twilioUrl && (

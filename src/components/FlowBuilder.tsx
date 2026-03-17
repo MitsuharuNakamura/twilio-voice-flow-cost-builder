@@ -95,6 +95,7 @@ export function FlowBuilder() {
   const edges = useFlowStore((s) => s.edges);
   const customPrices = useFlowStore((s) => s.customPrices);
   const customDurations = useFlowStore((s) => s.customDurations);
+  const ttsConfigs = useFlowStore((s) => s.ttsConfigs);
   const getNodeDef = useFlowStore((s) => s.getNodeDefinition);
   const onNodesChange = useFlowStore((s) => s.onNodesChange);
   const onEdgesChange = useFlowStore((s) => s.onEdgesChange);
@@ -144,6 +145,7 @@ export function FlowBuilder() {
         hasCustomDuration,
         customDurationMinutes: customDurations[node.id],
         customLabel: node.data?.customLabel,
+        ttsConfig: ttsConfigs[node.id],
       },
     };
   });

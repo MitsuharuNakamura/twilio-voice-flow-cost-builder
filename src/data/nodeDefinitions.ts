@@ -1,4 +1,48 @@
-export type BillingType = 'per_minute' | 'per_call' | 'free' | 'custom';
+export type BillingType = 'per_minute' | 'per_call' | 'free' | 'custom' | 'tts';
+
+export type TtsVoiceType = 'basic' | 'standard' | 'neural' | 'generative';
+
+export interface TtsConfig {
+  ttsType: TtsVoiceType;
+  chars: number;
+}
+
+// TTS pricing per 100-character block (USD)
+export const TTS_RATES: Record<TtsVoiceType, { tiers: { maxChars: number; rate: number }[] }> = {
+  basic: { tiers: [{ maxChars: Infinity, rate: 0 }] },
+  standard: { tiers: [{ maxChars: Infinity, rate: 0.0008 }] },
+  neural: {
+    tiers: [
+      { maxChars: 5_000_000, rate: 0.0032 },
+      { maxChars: 50_000_000, rate: 0.0029 },
+      { maxChars: 100_000_000, rate: 0.0027 },
+      { maxChars: Infinity, rate: 0.0025 },
+    ],
+  },
+  generative: {
+    tiers: [
+      { maxChars: 5_000_000, rate: 0.0130 },
+      { maxChars: 50_000_000, rate: 0.0100 },
+      { maxChars: 100_000_000, rate: 0.0080 },
+      { maxChars: Infinity, rate: 0.0060 },
+    ],
+  },
+};
+
+export const TTS_TYPE_LABELS: Record<TtsVoiceType, string> = {
+  basic: 'Basic (Free)',
+  standard: 'Standard',
+  neural: 'Neural',
+  generative: 'Generative',
+};
+
+export function getTtsRatePerBlock(ttsType: TtsVoiceType, totalMonthlyChars: number): number {
+  const { tiers } = TTS_RATES[ttsType];
+  for (const tier of tiers) {
+    if (totalMonthlyChars <= tier.maxChars) return tier.rate;
+  }
+  return tiers[tiers.length - 1].rate;
+}
 
 export interface NodeDefinition {
   id: string;
@@ -35,6 +79,8 @@ export const DEFAULT_NODE_DEFINITIONS: NodeDefinition[] = [
   { id: 'verify',   label: 'Twilio Verify',    labelEn: 'Twilio Verify',              category: 'Twilioサービス', billing: 'per_call',   unitPrice: 0.05,   twilioUrl: 'https://www.twilio.com/ja-jp/user-authentication-identity/verify/pricing' },
   { id: 'taskr',    label: 'TaskRouter',       labelEn: 'TaskRouter',                 category: 'Twilioサービス', billing: 'per_call',   unitPrice: 0.01,   twilioUrl: 'https://www.twilio.com/ja-jp/taskrouter/pricing' },
   { id: 'flex',     label: 'Twilio Flex',      labelEn: 'Twilio Flex',                category: 'Twilioサービス', billing: 'custom',     unitPrice: 0,      twilioUrl: 'https://www.twilio.com/ja-jp/flex/pricing' },
+  // TTS
+  { id: 'tts',      label: 'TTS (Text-to-Speech)', labelEn: 'TTS (Text-to-Speech)',   category: 'Twilioサービス', billing: 'tts',        unitPrice: 0,      twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing' },
   // 転送
   { id: 'fwdfx',    label: '転送先 (固定)',    labelEn: 'Forward To (Landline)',      category: '転送',           billing: 'free', unitPrice: 0 },
   { id: 'fwdmb',    label: '転送先 (携帯)',    labelEn: 'Forward To (Mobile)',        category: '転送',           billing: 'free', unitPrice: 0 },
@@ -63,6 +109,7 @@ export const BILLING_LABELS: Record<BillingType, string> = {
   per_call: '/call',
   free: 'Free',
   custom: 'Custom',
+  tts: 'TTS',
 };
 
 export const BILLING_OPTIONS: { value: BillingType; label: string }[] = [
@@ -70,6 +117,7 @@ export const BILLING_OPTIONS: { value: BillingType; label: string }[] = [
   { value: 'per_call',   label: '/通話 (per call)' },
   { value: 'free',       label: '無料 (free)' },
   { value: 'custom',     label: 'カスタム (custom)' },
+  { value: 'tts',        label: 'TTS' },
 ];
 
 import type { Language } from '../i18n/translations';
@@ -80,6 +128,7 @@ export function getBillingOptions(lang: Language): { value: BillingType; label: 
       { value: 'per_call',   label: '/call (per call)' },
       { value: 'free',       label: 'Free' },
       { value: 'custom',     label: 'Custom' },
+      { value: 'tts',        label: 'TTS' },
     ];
   }
   return BILLING_OPTIONS;

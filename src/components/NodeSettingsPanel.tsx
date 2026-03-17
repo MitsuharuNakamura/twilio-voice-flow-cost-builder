@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useFlowStore } from '../store/flowStore';
-import { BILLING_LABELS } from '../data/nodeDefinitions';
+import { BILLING_LABELS, TTS_TYPE_LABELS, getTtsRatePerBlock, type TtsVoiceType } from '../data/nodeDefinitions';
 import type { ShapeNodeData } from './nodes/ShapeNode';
 import { SHAPE_DEFAULTS } from './nodes/ShapeNode';
 import { useI18n } from '../i18n';
@@ -99,12 +99,15 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
   const nodes = useFlowStore((s) => s.nodes);
   const customPrices = useFlowStore((s) => s.customPrices);
   const customDurations = useFlowStore((s) => s.customDurations);
+  const ttsConfigs = useFlowStore((s) => s.ttsConfigs);
   const avgCallMinutes = useFlowStore((s) => s.avgCallMinutes);
+  const monthlyCallCount = useFlowStore((s) => s.monthlyCallCount);
   const getNodeDefinition = useFlowStore((s) => s.getNodeDefinition);
   const setCustomPrice = useFlowStore((s) => s.setCustomPrice);
   const removeCustomPrice = useFlowStore((s) => s.removeCustomPrice);
   const setCustomDuration = useFlowStore((s) => s.setCustomDuration);
   const removeCustomDuration = useFlowStore((s) => s.removeCustomDuration);
+  const setTtsConfig = useFlowStore((s) => s.setTtsConfig);
   const updateNodeData = useFlowStore((s) => s.updateNodeData);
 
   const { t, tNode } = useI18n();
@@ -117,9 +120,11 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
   const currentPriceUsd = node ? (customPrices[node.id] ?? (def?.unitPrice ?? 0)) : 0;
   const hasCustomDuration = node ? customDurations[node.id] !== undefined : false;
   const currentDuration = node ? (customDurations[node.id] ?? avgCallMinutes) : avgCallMinutes;
+  const ttsConfig = node ? ttsConfigs[node.id] : undefined;
 
   const [priceStr, setPriceStr] = useState('');
   const [durationStr, setDurationStr] = useState('');
+  const [ttsCharsStr, setTtsCharsStr] = useState('');
 
   useEffect(() => {
     setPriceStr(String(currentPriceUsd));
@@ -129,9 +134,21 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
     setDurationStr(String(currentDuration));
   }, [nodeId, hasCustomDuration, avgCallMinutes]);
 
+  useEffect(() => {
+    setTtsCharsStr(String(ttsConfig?.chars ?? 200));
+  }, [nodeId, ttsConfig?.chars]);
+
   if (!node || !def) return null;
 
   const displayLabel = tNode(def.id, def.label, def.labelEn);
+  const isTts = def.billing === 'tts';
+
+  // TTS calculated info
+  const currentTtsType = ttsConfig?.ttsType ?? 'standard';
+  const currentTtsChars = ttsConfig?.chars ?? 200;
+  const ttsBlocks = Math.ceil(currentTtsChars / 100);
+  const ttsTotalMonthlyChars = currentTtsChars * monthlyCallCount;
+  const ttsRate = getTtsRatePerBlock(currentTtsType, ttsTotalMonthlyChars);
 
   return (
     <div className="border-t border-gray-200 p-3">
@@ -158,85 +175,156 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
         )}
       </div>
 
-      {def.billing !== 'free' && (
-        <div className="mb-2">
-          <label className="text-xs text-gray-600 block mb-1">{t('unitPriceUsd')}</label>
-          <input
-            type="text"
-            inputMode="decimal"
-            value={priceStr}
-            onChange={(e) => {
-              const v = e.target.value;
-              if (v === '' || /^[0-9]*\.?[0-9]*$/.test(v)) {
-                setPriceStr(v);
-                const usd = parseFloat(v);
-                if (!isNaN(usd)) {
-                  setCustomPrice(node.id, usd);
-                }
-              }
-            }}
-            onBlur={() => {
-              const usd = parseFloat(priceStr);
-              if (isNaN(usd) || priceStr === '') {
-                setPriceStr(String(currentPriceUsd));
-              }
-            }}
-            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
-          />
-          {hasCustomPrice && (
-            <button
-              onClick={() => {
-                removeCustomPrice(node.id);
-                setPriceStr(String(def.unitPrice));
-              }}
-              className="text-xs text-blue-500 hover:underline mt-1"
+      {isTts ? (
+        <>
+          {/* TTS Voice Type */}
+          <div className="mb-2">
+            <label className="text-xs text-gray-600 block mb-1">
+              {t('ttsType')}
+            </label>
+            <select
+              value={currentTtsType}
+              onChange={(e) => setTtsConfig(node.id, { ttsType: e.target.value as TtsVoiceType, chars: currentTtsChars })}
+              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
             >
-              {t('resetToDefaultWithPrice', def.unitPrice.toFixed(4))}
-            </button>
-          )}
-        </div>
-      )}
+              {(Object.keys(TTS_TYPE_LABELS) as TtsVoiceType[]).map((type) => (
+                <option key={type} value={type}>{TTS_TYPE_LABELS[type]}</option>
+              ))}
+            </select>
+          </div>
 
-      {def.billing === 'per_minute' && (
-        <div className="mb-2">
-          <label className="text-xs text-gray-600 block mb-1">
-            {t('nodeDuration')}
-          </label>
-          <p className="text-[10px] text-gray-400 mb-1">
-            {t('nodeDurationHelp')}
-          </p>
-          <input
-            type="text"
-            inputMode="decimal"
-            value={durationStr}
-            onChange={(e) => {
-              const v = e.target.value;
-              if (v === '' || /^[0-9]*\.?[0-9]*$/.test(v)) {
-                setDurationStr(v);
-                const val = parseFloat(v);
-                if (!isNaN(val)) setCustomDuration(node.id, val);
-              }
-            }}
-            onBlur={() => {
-              const val = parseFloat(durationStr);
-              if (isNaN(val) || durationStr === '') {
-                setDurationStr(String(currentDuration));
-              }
-            }}
-            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
-          />
-          {hasCustomDuration && (
-            <button
-              onClick={() => {
-                removeCustomDuration(node.id);
-                setDurationStr(String(avgCallMinutes));
+          {/* TTS Characters per call */}
+          <div className="mb-2">
+            <label className="text-xs text-gray-600 block mb-1">
+              {t('ttsCharsPerCall')}
+            </label>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={ttsCharsStr}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === '' || /^[0-9]*$/.test(v)) {
+                  setTtsCharsStr(v);
+                  const val = parseInt(v);
+                  if (!isNaN(val) && val >= 0) {
+                    setTtsConfig(node.id, { ttsType: currentTtsType, chars: val });
+                  }
+                }
               }}
-              className="text-xs text-blue-500 hover:underline mt-1"
-            >
-              {t('resetToDefaultDuration', avgCallMinutes)}
-            </button>
+              onBlur={() => {
+                const val = parseInt(ttsCharsStr);
+                if (isNaN(val) || ttsCharsStr === '') {
+                  setTtsCharsStr(String(currentTtsChars));
+                }
+              }}
+              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
+            />
+          </div>
+
+          {/* TTS Price Summary */}
+          <div className="mb-2 p-2 bg-purple-50 rounded text-xs space-y-1">
+            <div className="flex justify-between text-gray-600">
+              <span>{t('ttsBlocks')} (100chars)</span>
+              <span>{ttsBlocks}</span>
+            </div>
+            <div className="flex justify-between text-gray-600">
+              <span>{t('ttsMonthlyChars')}</span>
+              <span>{ttsTotalMonthlyChars.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-gray-600">
+              <span>{t('ttsRatePerBlock')}</span>
+              <span>${ttsRate.toFixed(4)}</span>
+            </div>
+            <div className="flex justify-between font-medium text-purple-700">
+              <span>{t('ttsPerCall')}</span>
+              <span>${(ttsBlocks * ttsRate).toFixed(4)}</span>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          {def.billing !== 'free' && (
+            <div className="mb-2">
+              <label className="text-xs text-gray-600 block mb-1">{t('unitPriceUsd')}</label>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={priceStr}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === '' || /^[0-9]*\.?[0-9]*$/.test(v)) {
+                    setPriceStr(v);
+                    const usd = parseFloat(v);
+                    if (!isNaN(usd)) {
+                      setCustomPrice(node.id, usd);
+                    }
+                  }
+                }}
+                onBlur={() => {
+                  const usd = parseFloat(priceStr);
+                  if (isNaN(usd) || priceStr === '') {
+                    setPriceStr(String(currentPriceUsd));
+                  }
+                }}
+                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
+              />
+              {hasCustomPrice && (
+                <button
+                  onClick={() => {
+                    removeCustomPrice(node.id);
+                    setPriceStr(String(def.unitPrice));
+                  }}
+                  className="text-xs text-blue-500 hover:underline mt-1"
+                >
+                  {t('resetToDefaultWithPrice', def.unitPrice.toFixed(4))}
+                </button>
+              )}
+            </div>
           )}
-        </div>
+
+          {def.billing === 'per_minute' && (
+            <div className="mb-2">
+              <label className="text-xs text-gray-600 block mb-1">
+                {t('nodeDuration')}
+              </label>
+              <p className="text-[10px] text-gray-400 mb-1">
+                {t('nodeDurationHelp')}
+              </p>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={durationStr}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === '' || /^[0-9]*\.?[0-9]*$/.test(v)) {
+                    setDurationStr(v);
+                    const val = parseFloat(v);
+                    if (!isNaN(val)) setCustomDuration(node.id, val);
+                  }
+                }}
+                onBlur={() => {
+                  const val = parseFloat(durationStr);
+                  if (isNaN(val) || durationStr === '') {
+                    setDurationStr(String(currentDuration));
+                  }
+                }}
+                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
+              />
+              {hasCustomDuration && (
+                <button
+                  onClick={() => {
+                    removeCustomDuration(node.id);
+                    setDurationStr(String(avgCallMinutes));
+                  }}
+                  className="text-xs text-blue-500 hover:underline mt-1"
+                >
+                  {t('resetToDefaultDuration', avgCallMinutes)}
+                </button>
+              )}
+            </div>
+          )}
+        </>
       )}
 
       {def.twilioUrl && (

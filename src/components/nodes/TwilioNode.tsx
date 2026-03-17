@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { CATEGORY_COLORS, DEFAULT_CATEGORY_COLOR, BILLING_LABELS, type BillingType } from '../../data/nodeDefinitions';
+import { CATEGORY_COLORS, DEFAULT_CATEGORY_COLOR, BILLING_LABELS, TTS_TYPE_LABELS, type BillingType, type TtsConfig } from '../../data/nodeDefinitions';
 import { useI18n } from '../../i18n';
 
 function TwilioNodeComponent({ data, selected }: NodeProps) {
@@ -38,15 +38,29 @@ function TwilioNodeComponent({ data, selected }: NodeProps) {
             </span>
           )}
         </div>
-        <div className="text-xs text-gray-500 mt-0.5">
-          {billing === 'free'
-            ? 'Free'
-            : `${formatUsd(unitPrice)} ${BILLING_LABELS[billing]}`}
-        </div>
-        {hasCustomDuration && billing === 'per_minute' && (
-          <div className="text-[10px] text-indigo-500 mt-0.5 font-medium">
-            {customDurationMinutes}min/call
-          </div>
+        {billing === 'tts' ? (
+          <>
+            {(data.ttsConfig as TtsConfig | undefined) ? (
+              <div className="text-[10px] text-purple-500 mt-0.5 font-medium">
+                {TTS_TYPE_LABELS[(data.ttsConfig as TtsConfig).ttsType]} / {(data.ttsConfig as TtsConfig).chars.toLocaleString()} chars
+              </div>
+            ) : (
+              <div className="text-xs text-gray-400 mt-0.5">TTS</div>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="text-xs text-gray-500 mt-0.5">
+              {billing === 'free'
+                ? 'Free'
+                : `${formatUsd(unitPrice)} ${BILLING_LABELS[billing]}`}
+            </div>
+            {hasCustomDuration && billing === 'per_minute' && (
+              <div className="text-[10px] text-indigo-500 mt-0.5 font-medium">
+                {customDurationMinutes}min/call
+              </div>
+            )}
+          </>
         )}
       </div>
       <Handle type="target" position={Position.Left} id="left" className="!w-2 !h-2 !bg-gray-300 !border-0 !opacity-0 hover:!opacity-100 !-translate-x-1/2" />

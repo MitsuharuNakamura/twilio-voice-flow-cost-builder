@@ -120,6 +120,15 @@ const translations = {
   billingPerCall: { ja: '/通話 (per call)', en: '/call (per call)' },
   billingFree: { ja: '無料 (free)', en: 'Free' },
   billingCustom: { ja: 'カスタム (custom)', en: 'Custom' },
+  billingTts: { ja: 'TTS', en: 'TTS' },
+
+  // ===== TTS =====
+  ttsType: { ja: 'TTSタイプ', en: 'TTS Voice Type' },
+  ttsCharsPerCall: { ja: '1通話あたりの文字数', en: 'Characters per call' },
+  ttsBlocks: { ja: 'ブロック数', en: 'Blocks' },
+  ttsMonthlyChars: { ja: '月間総文字数', en: 'Monthly total chars' },
+  ttsRatePerBlock: { ja: '単価/ブロック', en: 'Rate/block' },
+  ttsPerCall: { ja: '1通話あたり', en: 'Per call' },
 
   // ===== Categories =====
   catNetwork: { ja: 'ネットワーク', en: 'Network' },
