@@ -91,7 +91,11 @@ export const DEFAULT_NODE_DEFINITIONS: NodeDefinition[] = [
   // Conference / AMD / Insights
   { id: 'conference', label: 'Conference Calls',    labelEn: 'Conference Calls',       category: 'Twilioサービス', billing: 'per_minute', unitPrice: 0.0018, twilioUrl: 'https://www.twilio.com/ja-jp/voice/conference', note: '参加者ごと' },
   { id: 'amd',      label: '留守番電話検出 (AMD)',  labelEn: 'Answering Machine Detection', category: 'Twilioサービス', billing: 'per_call', unitPrice: 0.0075, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing' },
-  { id: 'insights', label: 'Voice Insights',       labelEn: 'Voice Insights',         category: 'Twilioサービス', billing: 'per_minute', unitPrice: 0.0024, twilioUrl: 'https://www.twilio.com/ja-jp/voice/insights/pricing' },
+  { id: 'insights', label: 'Voice insights advanced features',       labelEn: 'Voice insights advanced features',         category: 'Twilioサービス', billing: 'per_minute', unitPrice: 0.0024, twilioUrl: 'https://www.twilio.com/ja-jp/voice/insights/pricing' },
+  // Call Recording
+  { id: 'rec_recording', label: 'Call Recording (Recording)',       labelEn: 'Call Recording (Recording)',       category: 'Twilioサービス', billing: 'per_minute', unitPrice: 0.0025, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing' },
+  { id: 'rec_storage',   label: 'Call Recording (Storage)',         labelEn: 'Call Recording (Storage)',         category: 'Twilioサービス', billing: 'per_minute', unitPrice: 0.0005, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing', note: '/min per mo' },
+  { id: 'rec_transcription', label: 'Call Recording (Transcription)', labelEn: 'Call Recording (Transcription)', category: 'Twilioサービス', billing: 'per_minute', unitPrice: 0.0500, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing' },
   // 転送
   { id: 'fwdfx',    label: '転送先 (固定)',    labelEn: 'Forward To (Landline)',      category: '転送',           billing: 'free', unitPrice: 0 },
   { id: 'fwdmb',    label: '転送先 (携帯)',    labelEn: 'Forward To (Mobile)',        category: '転送',           billing: 'free', unitPrice: 0 },
