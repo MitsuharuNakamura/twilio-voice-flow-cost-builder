@@ -88,6 +88,10 @@ export const DEFAULT_NODE_DEFINITIONS: NodeDefinition[] = [
   { id: 'flex',     label: 'Twilio Flex',      labelEn: 'Twilio Flex',                category: 'Twilioサービス', billing: 'custom',     unitPrice: 0,      twilioUrl: 'https://www.twilio.com/ja-jp/flex/pricing' },
   // TTS
   { id: 'tts',      label: 'TTS (Text-to-Speech)', labelEn: 'TTS (Text-to-Speech)',   category: 'Twilioサービス', billing: 'tts',        unitPrice: 0,      twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing' },
+  // Conference / AMD / Insights
+  { id: 'conference', label: 'Conference Calls',    labelEn: 'Conference Calls',       category: 'Twilioサービス', billing: 'per_minute', unitPrice: 0.0018, twilioUrl: 'https://www.twilio.com/ja-jp/voice/conference', note: '参加者ごと' },
+  { id: 'amd',      label: '留守番電話検出 (AMD)',  labelEn: 'Answering Machine Detection', category: 'Twilioサービス', billing: 'per_call', unitPrice: 0.0075, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing' },
+  { id: 'insights', label: 'Voice Insights',       labelEn: 'Voice Insights',         category: 'Twilioサービス', billing: 'per_minute', unitPrice: 0.0024, twilioUrl: 'https://www.twilio.com/ja-jp/voice/insights/pricing' },
   // 転送
   { id: 'fwdfx',    label: '転送先 (固定)',    labelEn: 'Forward To (Landline)',      category: '転送',           billing: 'free', unitPrice: 0 },
   { id: 'fwdmb',    label: '転送先 (携帯)',    labelEn: 'Forward To (Mobile)',        category: '転送',           billing: 'free', unitPrice: 0 },
