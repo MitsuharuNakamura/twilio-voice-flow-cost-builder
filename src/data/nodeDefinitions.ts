@@ -10,7 +10,14 @@ export interface TtsConfig {
 // TTS pricing per 100-character block (USD)
 export const TTS_RATES: Record<TtsVoiceType, { tiers: { maxChars: number; rate: number }[] }> = {
   basic: { tiers: [{ maxChars: Infinity, rate: 0 }] },
-  standard: { tiers: [{ maxChars: Infinity, rate: 0.0008 }] },
+  standard: {
+    tiers: [
+      { maxChars: 5_000_000, rate: 0.0008 },
+      { maxChars: 50_000_000, rate: 0.00072 },
+      { maxChars: 100_000_000, rate: 0.00068 },
+      { maxChars: Infinity, rate: 0.00064 },
+    ],
+  },
   neural: {
     tiers: [
       { maxChars: 5_000_000, rate: 0.0032 },
