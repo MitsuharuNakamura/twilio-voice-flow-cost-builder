@@ -23,6 +23,7 @@ function NodeDefEditor({
 }) {
   const { t, lang, tCat } = useI18n();
   const [label, setLabel] = useState(initial?.label ?? '');
+  const [labelEn, setLabelEn] = useState(initial?.labelEn ?? '');
   const [category, setCategory] = useState(initial?.category ?? categories[0] ?? '');
   const [newCategory, setNewCategory] = useState('');
   const [useNewCategory, setUseNewCategory] = useState(false);
@@ -42,6 +43,7 @@ function NodeDefEditor({
     onSave({
       id,
       label: label.trim(),
+      labelEn: labelEn.trim() || undefined,
       category: finalCategory,
       billing,
       unitPrice: parseFloat(unitPriceUsdStr) || 0,
@@ -55,12 +57,21 @@ function NodeDefEditor({
         {initial ? t('editNode') : t('createNode')}
       </div>
       <div>
-        <label className="text-[10px] text-gray-500">{t('name')}</label>
+        <label className="text-[10px] text-gray-500">{t('name')} (JA)</label>
         <input
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
           placeholder={t('nodeName')}
+        />
+      </div>
+      <div>
+        <label className="text-[10px] text-gray-500">{t('name')} (EN)</label>
+        <input
+          value={labelEn}
+          onChange={(e) => setLabelEn(e.target.value)}
+          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
+          placeholder="Node name (EN)"
         />
       </div>
       <div>
@@ -199,6 +210,7 @@ export function NodePalette({ onOpenBulkEdit }: { onOpenBulkEdit: () => void }) 
   const handleUpdate = (def: NodeDefinition) => {
     updateNodeDefinition(def.id, {
       label: def.label,
+      labelEn: def.labelEn,
       category: def.category,
       billing: def.billing,
       unitPrice: def.unitPrice,
@@ -298,7 +310,7 @@ export function NodePalette({ onOpenBulkEdit }: { onOpenBulkEdit: () => void }) 
                         style={{ backgroundColor: CATEGORY_COLORS[cat] || DEFAULT_CATEGORY_COLOR }}
                       />
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs font-medium text-gray-800 truncate">{tNode(def.id, def.label)}</div>
+                        <div className="text-xs font-medium text-gray-800 truncate">{tNode(def.id, def.label, def.labelEn)}</div>
                         <div className="text-[10px] text-gray-400">
                           {def.billing === 'free'
                             ? 'Free'

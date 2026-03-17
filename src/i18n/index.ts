@@ -21,6 +21,6 @@ export function useI18n() {
     t,
     lang: language,
     tCat: (category: string) => translateCategory(category, language),
-    tNode: (nodeId: string, label: string) => translateNodeLabel(nodeId, label, language),
+    tNode: (nodeId: string, label: string, labelEn?: string) => translateNodeLabel(nodeId, label, language, labelEn),
   };
 }

@@ -202,8 +202,12 @@ const NODE_LABEL_DISPLAY: Record<string, Record<Language, string>> = {
   callee: { ja: '着信先', en: 'Callee' },
 };
 
-export function translateNodeLabel(nodeId: string, label: string, lang: Language): string {
-  return NODE_LABEL_DISPLAY[nodeId]?.[lang] ?? label;
+export function translateNodeLabel(nodeId: string, label: string, lang: Language, labelEn?: string): string {
+  if (lang === 'en') {
+    // Priority: labelEn from definition > hardcoded map > fallback to label
+    return labelEn || NODE_LABEL_DISPLAY[nodeId]?.en || label;
+  }
+  return NODE_LABEL_DISPLAY[nodeId]?.ja ?? label;
 }
 
 export default translations;

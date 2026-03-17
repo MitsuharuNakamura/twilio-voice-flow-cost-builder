@@ -136,6 +136,7 @@ export function FlowBuilder() {
       data: {
         ...node.data,
         label: (node.data?.customLabel as string) || def.label,
+        labelEn: def.labelEn,
         category: def.category,
         billing: def.billing,
         unitPrice: customPrices[node.id] ?? def.unitPrice,

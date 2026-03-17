@@ -131,7 +131,7 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
 
   if (!node || !def) return null;
 
-  const displayLabel = tNode(def.id, def.label);
+  const displayLabel = tNode(def.id, def.label, def.labelEn);
 
   return (
     <div className="border-t border-gray-200 p-3">
