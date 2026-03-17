@@ -17,14 +17,14 @@ export const DEFAULT_NODE_DEFINITIONS: NodeDefinition[] = [
   { id: 'caller',   label: '架電者',           labelEn: 'Caller',                    category: 'ネットワーク',    billing: 'free',       unitPrice: 0 },
   { id: 'nttcom',   label: 'PSTN / NTTCOM',    labelEn: 'PSTN / NTTCOM',             category: 'ネットワーク',    billing: 'free', unitPrice: 0, note: '参考値' },
   // Twilio 着信
-  { id: 'tw050',    label: 'Twilio 050番号',   labelEn: 'Twilio 050 Number',          category: 'Twilio着信',     billing: 'per_minute', unitPrice: 0.0100, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp' },
-  { id: 'twlocal',  label: 'Twilio 市外局番',  labelEn: 'Twilio Area Code',           category: 'Twilio着信',     billing: 'per_minute', unitPrice: 0.0100, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp' },
-  { id: 'twlocal',  label: 'Twilio Toll-Free', labelEn: 'Twilio Toll-Free',           category: 'Twilio着信',     billing: 'per_minute', unitPrice: 0.2780, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp' },
+  { id: 'tw050',    label: '着信(日本 050番号)',   labelEn: 'Inbound Japan 050 Number',          category: 'Twilio着信',     billing: 'per_minute', unitPrice: 0.0100, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp' },
+  { id: 'twlocal',  label: '着信(日本 市外局番)',  labelEn: 'Inbound Japan Area Code',           category: 'Twilio着信',     billing: 'per_minute', unitPrice: 0.0100, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp' },
+  { id: 'twlocal',  label: '着信(日本 Toll-Free)', labelEn: 'Inbound Japan Toll-Free',           category: 'Twilio着信',     billing: 'per_minute', unitPrice: 0.2780, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp' },
 
   // Twilio 発信
-  { id: 'twout_fx', label: '発信 (固定宛)',    labelEn: 'Outbound (Landline)',        category: 'Twilio発信',     billing: 'per_minute', unitPrice: 0.0746, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp' },
-  { id: 'twout_mb', label: '発信 (携帯宛)',    labelEn: 'Outbound (Mobile)',          category: 'Twilio発信',     billing: 'per_minute', unitPrice: 0.1850, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp' },
-  { id: 'twout_voip', label: '発信 (VOIP)',    labelEn: 'Outbound (VoIP)',            category: 'Twilio発信',     billing: 'per_minute', unitPrice: 0.0746, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp', note: '宛先国により異なる' },
+  { id: 'twout_fx', label: '発信 (日本-固定宛)',    labelEn: 'Outbound (Japan Landline)',        category: 'Twilio発信',     billing: 'per_minute', unitPrice: 0.0746, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp' },
+  { id: 'twout_mb', label: '発信 (日本-携帯宛)',    labelEn: 'Outbound (Japan Mobile)',          category: 'Twilio発信',     billing: 'per_minute', unitPrice: 0.1850, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp' },
+  { id: 'twout_voip', label: '発信 (日本-VOIP)',    labelEn: 'Outbound (Japan VoIP)',            category: 'Twilio発信',     billing: 'per_minute', unitPrice: 0.0746, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp', note: '宛先国により異なる' },
   { id: 'twout_appcall', label: '発信 (AppCall)', labelEn: 'Outbound (AppCall)',      category: 'Twilio発信',     billing: 'per_minute', unitPrice: 0.0040, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp', note: '宛先国により異なる' },
   { id: 'twout_sipi', label: '発信 (SIP Interface)', labelEn: 'Outbound (SIP Interface)', category: 'Twilio発信', billing: 'per_minute', unitPrice: 0.0040, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp', note: '宛先国により異なる' },
 
