@@ -1,5 +1,77 @@
 # Changelog
 
+## 2026-03-18 - 機能追加 (第4弾)
+
+### Enterprise Editions & サポートプラン
+
+- 右サイドバーに「Enterprise Editions」折りたたみセクションを追加
+- エディション選択（ラジオボタン）: なし / Administration ($10/10%) / Security ($7,500/16%) / Enterprise ($15,000/20%)
+- `max(最低月額, 利用料×%)` の自動計算、適用額をハイライト表示
+- 個別機能アドオン（チェックボックス）: SSO / HIPAA / Message Redaction / Static Proxy / Voice Recording Encryption
+- 「サポートプラン」折りたたみセクションを追加
+- プラン選択: Developer(Free) / Production($250/4%) / Business($1,500/6%) / Personalized($5,000/8%)
+- 合計表示: 利用料合計 → エディション費用 → アドオン費用 → サポート費用 → 総合計
+
+### TTS (Text-to-Speech) ノード
+
+- 新しい課金タイプ `tts` を追加
+- TTSタイプ選択: Basic(無料) / Standard / Neural / Generative
+- 1通話あたりの文字数入力、100文字ブロック単位で課金計算
+- ボリュームディスカウント対応（Standard/Neural/Generative、月間総文字数に基づく4段階料金ティア）
+- ノード設定パネルにTTS専用UI（タイプ選択・文字数入力・料金サマリ）
+- キャンバス上のノードにTTSタイプ＋文字数バッジを表示
+
+### per_kchar課金タイプ（1k文字単位課金）
+
+- 新しい課金タイプ `per_kchar` を追加
+- Generative Operator (Input/Output) で使用
+- ノード設定パネルに文字数入力UI＋料金サマリを追加
+- キャンバスノードに文字数バッジ表示
+
+### 新規デフォルトノード追加
+
+- **Twilioサービス**: Conference Calls ($0.0018/participant per min), 留守番電話検出/AMD ($0.0075/call), Voice Insights ($0.0024/min), TTS, Call Recording (Recording $0.0025/min, Storage $0.0005/min, Transcription $0.0500/min)
+- **Conversational Intelligence** (新カテゴリ・ピンク): Transcription Batch/Streaming, Language Operator Standard/Text Analysis, Generative Operator Input/Output
+
+### Toll-Free ID重複修正
+
+- `twlocal` (重複) → `twtollfree` にIDを修正
+- persist mergeロジックを改善: 常にDEFAULT_NODE_DEFINITIONS順に再構築し、新デフォルトノードが自動追加されるように
+
+---
+
+## 2026-03-17 - 機能追加 (第3弾)
+
+### 日英言語切替 (i18n)
+
+- ツールバーにJA/EN切替トグルを追加
+- 全UIテキストを翻訳辞書で管理 (`src/i18n/translations.ts`)
+- `useI18n()` フック: `t(key)`, `tCat(category)`, `tNode(id, label, labelEn)` を提供
+- カテゴリ名・ノードラベル・ボタン・フォームラベル・メッセージ等すべて対応
+- コスト内訳のラベル表示も言語切替に対応
+- 言語設定はlocalStorageに永続化
+
+### ノード定義のJA/EN対応
+
+- `NodeDefinition` に `labelEn?: string` フィールドを追加
+- 全デフォルトノードに英語ラベルを設定
+- 新規作成・編集フォームに「名前(JA)」「名前(EN)」の2フィールドを追加
+- 一括編集モーダルにEN名前列を追加
+- persist mergeでlabelEnをデフォルトからバックフィル
+
+### ノードラベル表示の改善
+
+- ハードコードされた翻訳マップ (NODE_LABEL_DISPLAY) を廃止
+- NodeDefinitionの `label`(JA) / `labelEn`(EN) を直接使用
+- デフォルトラベル変更時に即座に反映されるように
+
+### デフォルトノードラベル更新
+
+- 着信ノードに国名を追加: 「Twilio 050番号」→「着信(日本 050番号)」等
+- 発信ノードに国名を追加: 「発信(固定宛)」→「発信(日本-固定宛)」等
+
+---
+
 ## 2026-03-13 - 機能追加 (第2弾)
 
 ### パレットの折りたたみ
