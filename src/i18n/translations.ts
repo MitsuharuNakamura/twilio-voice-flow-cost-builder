@@ -129,25 +129,6 @@ const translations = {
   catForwarding: { ja: '転送', en: 'Forwarding' },
   catExternal: { ja: '外部連携', en: 'External Integration' },
 
-  // ===== Default Node Labels =====
-  nodeCaller: { ja: '架電者', en: 'Caller' },
-  nodeNttcom: { ja: 'PSTN / NTTCOM', en: 'PSTN / NTTCOM' },
-  nodeTw050: { ja: 'Twilio 050番号', en: 'Twilio 050 Number' },
-  nodeTwLocal: { ja: 'Twilio 市外局番', en: 'Twilio Area Code' },
-  nodeOutFx: { ja: '発信 (固定宛)', en: 'Outbound (Landline)' },
-  nodeOutMb: { ja: '発信 (携帯宛)', en: 'Outbound (Mobile)' },
-  nodeOutVoip: { ja: '発信 (VOIP)', en: 'Outbound (VoIP)' },
-  nodeOutAppCall: { ja: '発信 (AppCall)', en: 'Outbound (AppCall)' },
-  nodeOutSipI: { ja: '発信 (SIP Interface)', en: 'Outbound (SIP Interface)' },
-  nodeFwdFx: { ja: '転送先 (固定)', en: 'Forward To (Landline)' },
-  nodeFwdMb: { ja: '転送先 (携帯)', en: 'Forward To (Mobile)' },
-  nodeExtApi: { ja: '外部API / LLM', en: 'External API / LLM' },
-  nodeOperator: { ja: 'オペレーター', en: 'Operator' },
-  nodeSales: { ja: '営業スタッフ', en: 'Sales Staff' },
-  nodeCallee: { ja: '着信先', en: 'Callee' },
-  noteReference: { ja: '参考値', en: 'Reference' },
-  noteVariesByCountry: { ja: '宛先国により異なる', en: 'Varies by destination' },
-
   // ===== Language toggle =====
   language: { ja: '言語', en: 'Language' },
 } as const;
@@ -175,39 +156,12 @@ export function translateCategory(category: string, lang: Language): string {
   return CATEGORY_DISPLAY[category]?.[lang] ?? category;
 }
 
-// Default node label mapping (node id -> display label)
-const NODE_LABEL_DISPLAY: Record<string, Record<Language, string>> = {
-  caller: { ja: '架電者', en: 'Caller' },
-  nttcom: { ja: 'PSTN / NTTCOM', en: 'PSTN / NTTCOM' },
-  tw050: { ja: 'Twilio 050番号', en: 'Twilio 050 Number' },
-  twlocal: { ja: 'Twilio 市外局番', en: 'Twilio Area Code' },
-  twout_fx: { ja: '発信 (固定宛)', en: 'Outbound (Landline)' },
-  twout_mb: { ja: '発信 (携帯宛)', en: 'Outbound (Mobile)' },
-  twout_voip: { ja: '発信 (VOIP)', en: 'Outbound (VoIP)' },
-  twout_appcall: { ja: '発信 (AppCall)', en: 'Outbound (AppCall)' },
-  twout_sipi: { ja: '発信 (SIP Interface)', en: 'Outbound (SIP Interface)' },
-  studio: { ja: 'Twilio Studio', en: 'Twilio Studio' },
-  crelay: { ja: 'ConversationRelay', en: 'ConversationRelay' },
-  mstream: { ja: 'Media Streams', en: 'Media Streams' },
-  verify: { ja: 'Twilio Verify', en: 'Twilio Verify' },
-  taskr: { ja: 'TaskRouter', en: 'TaskRouter' },
-  flex: { ja: 'Twilio Flex', en: 'Twilio Flex' },
-  fwdfx: { ja: '転送先 (固定)', en: 'Forward To (Landline)' },
-  fwdmb: { ja: '転送先 (携帯)', en: 'Forward To (Mobile)' },
-  extapi: { ja: '外部API / LLM', en: 'External API / LLM' },
-  server: { ja: 'server', en: 'server' },
-  webhook: { ja: 'Webhook Server', en: 'Webhook Server' },
-  operator: { ja: 'オペレーター', en: 'Operator' },
-  sales: { ja: '営業スタッフ', en: 'Sales Staff' },
-  callee: { ja: '着信先', en: 'Callee' },
-};
-
-export function translateNodeLabel(nodeId: string, label: string, lang: Language, labelEn?: string): string {
+// label = JA label (source of truth), labelEn = EN label from definition
+export function translateNodeLabel(_nodeId: string, label: string, lang: Language, labelEn?: string): string {
   if (lang === 'en') {
-    // Priority: labelEn from definition > hardcoded map > fallback to label
-    return labelEn || NODE_LABEL_DISPLAY[nodeId]?.en || label;
+    return labelEn || label;
   }
-  return NODE_LABEL_DISPLAY[nodeId]?.ja ?? label;
+  return label;
 }
 
 export default translations;
