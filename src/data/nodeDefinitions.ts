@@ -96,6 +96,13 @@ export const DEFAULT_NODE_DEFINITIONS: NodeDefinition[] = [
   { id: 'rec_recording', label: 'Call Recording (Recording)',       labelEn: 'Call Recording (Recording)',       category: 'Twilioサービス', billing: 'per_minute', unitPrice: 0.0025, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing' },
   { id: 'rec_storage',   label: 'Call Recording (Storage)',         labelEn: 'Call Recording (Storage)',         category: 'Twilioサービス', billing: 'per_minute', unitPrice: 0.0005, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing', note: '/min per mo' },
   { id: 'rec_transcription', label: 'Call Recording (Transcription)', labelEn: 'Call Recording (Transcription)', category: 'Twilioサービス', billing: 'per_minute', unitPrice: 0.0500, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing' },
+  // Conversational Intelligence
+  { id: 'ci_batch',     label: 'Transcription (Batch)',         labelEn: 'Transcription (Batch)',         category: 'Conversational Intelligence', billing: 'per_minute', unitPrice: 0.024,  twilioUrl: 'https://www.twilio.com/ja-jp/voice/intelligence' },
+  { id: 'ci_stream',    label: 'Transcription (Streaming)',     labelEn: 'Transcription (Streaming)',     category: 'Conversational Intelligence', billing: 'per_minute', unitPrice: 0.027,  twilioUrl: 'https://www.twilio.com/ja-jp/voice/intelligence' },
+  { id: 'ci_lo_std',    label: 'Language Operator (Standard)',  labelEn: 'Language Operator (Standard)',  category: 'Conversational Intelligence', billing: 'per_minute', unitPrice: 0.0040, twilioUrl: 'https://www.twilio.com/ja-jp/voice/intelligence' },
+  { id: 'ci_lo_text',   label: 'Language Operator (Text Analysis)', labelEn: 'Language Operator (Text Analysis)', category: 'Conversational Intelligence', billing: 'per_minute', unitPrice: 0.0035, twilioUrl: 'https://www.twilio.com/ja-jp/voice/intelligence' },
+  { id: 'ci_gen_input', label: 'Generative Operator (Input)',   labelEn: 'Generative Operator (Input)',   category: 'Conversational Intelligence', billing: 'custom',     unitPrice: 0.002,  twilioUrl: 'https://www.twilio.com/ja-jp/voice/intelligence', note: '/1k chars' },
+  { id: 'ci_gen_output', label: 'Generative Operator (Output)', labelEn: 'Generative Operator (Output)', category: 'Conversational Intelligence', billing: 'custom',     unitPrice: 0.018,  twilioUrl: 'https://www.twilio.com/ja-jp/voice/intelligence', note: '/1k chars' },
   // 転送
   { id: 'fwdfx',    label: '転送先 (固定)',    labelEn: 'Forward To (Landline)',      category: '転送',           billing: 'free', unitPrice: 0 },
   { id: 'fwdmb',    label: '転送先 (携帯)',    labelEn: 'Forward To (Mobile)',        category: '転送',           billing: 'free', unitPrice: 0 },
@@ -113,6 +120,7 @@ export const CATEGORY_COLORS: Record<string, string> = {
   'Twilio着信':     '#ef4444', // red
   'Twilio発信':     '#f97316', // orange
   'Twilioサービス': '#f59e0b', // amber
+  'Conversational Intelligence': '#ec4899', // pink
   '転送':           '#10b981', // emerald
   '外部連携':       '#8b5cf6', // violet
 };

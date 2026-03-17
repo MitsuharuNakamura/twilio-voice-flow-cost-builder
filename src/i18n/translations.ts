@@ -135,6 +135,7 @@ const translations = {
   catTwilioInbound: { ja: 'Twilio着信', en: 'Twilio Inbound' },
   catTwilioOutbound: { ja: 'Twilio発信', en: 'Twilio Outbound' },
   catTwilioServices: { ja: 'Twilioサービス', en: 'Twilio Services' },
+  catConvIntel: { ja: 'Conversational Intelligence', en: 'Conversational Intelligence' },
   catForwarding: { ja: '転送', en: 'Forwarding' },
   catExternal: { ja: '外部連携', en: 'External Integration' },
 
@@ -157,6 +158,7 @@ const CATEGORY_DISPLAY: Record<string, Record<Language, string>> = {
   'Twilio着信': { ja: 'Twilio着信', en: 'Twilio Inbound' },
   'Twilio発信': { ja: 'Twilio発信', en: 'Twilio Outbound' },
   'Twilioサービス': { ja: 'Twilioサービス', en: 'Twilio Services' },
+  'Conversational Intelligence': { ja: 'Conversational Intelligence', en: 'Conversational Intelligence' },
   '転送': { ja: '転送', en: 'Forwarding' },
   '外部連携': { ja: '外部連携', en: 'External Integration' },
 };
