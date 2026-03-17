@@ -6,6 +6,7 @@ export interface CostLineItem {
   nodeId: string;
   instanceId: string;
   label: string;
+  labelEn?: string;
   billing: string;
   unitPrice: number;
   minutes: number;
@@ -75,7 +76,8 @@ export function calculateCosts(
     items.push({
       nodeId: defId,
       instanceId: node.id,
-      label: (node.data?.label as string) || def.label,
+      label: (node.data?.customLabel as string) || def.label,
+      labelEn: def.labelEn,
       billing: def.billing,
       unitPrice,
       minutes,

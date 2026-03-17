@@ -86,7 +86,7 @@ export function CostPanel() {
   const toggleAddon = useFlowStore((s) => s.toggleAddon);
   const setSupportPlan = useFlowStore((s) => s.setSupportPlan);
 
-  const { t, lang } = useI18n();
+  const { t, lang, tNode } = useI18n();
 
   const [editionOpen, setEditionOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
@@ -358,7 +358,7 @@ export function CostPanel() {
                 className="flex items-center justify-between px-2 py-1.5 bg-white rounded border border-gray-100 hover:border-gray-300 cursor-pointer text-xs"
               >
                 <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                  <span className="truncate font-medium text-gray-700">{item.label}</span>
+                  <span className="truncate font-medium text-gray-700">{tNode(item.nodeId, item.label, item.labelEn)}</span>
                   <span
                     className={`px-1 py-0.5 rounded text-[10px] shrink-0 ${
                       BILLING_BADGE_COLORS[item.billing as BillingType]
