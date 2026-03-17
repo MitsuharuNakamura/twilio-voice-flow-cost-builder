@@ -172,13 +172,20 @@ export function NodePalette({ onOpenBulkEdit }: { onOpenBulkEdit: () => void }) 
   const deleteNodeDefinition = useFlowStore((s) => s.deleteNodeDefinition);
   const resetNodeDefinitions = useFlowStore((s) => s.resetNodeDefinitions);
 
-  const { t, tCat, tNode } = useI18n();
+  const { t, lang, tCat, tNode } = useI18n();
 
   const [showCreate, setShowCreate] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const categories = [...new Set(nodeDefinitions.map((n) => n.category))];
+  const allCategories = [...new Set(nodeDefinitions.map((n) => n.category))];
+
+  // Default all collapsed
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(
+    () => new Set(allCategories),
+  );
+
+  const categories = allCategories;
 
   const toggleCategory = (cat: string) => {
     setCollapsedCategories((prev) => {
@@ -255,6 +262,17 @@ export function NodePalette({ onOpenBulkEdit }: { onOpenBulkEdit: () => void }) 
         </div>
       </div>
 
+      {/* Search */}
+      <div className="px-3 py-2 border-b border-gray-200">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder={lang === 'ja' ? '🔍 ノードを検索...' : '🔍 Search nodes...'}
+          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white"
+        />
+      </div>
+
       {showCreate && (
         <NodeDefEditor
           categories={categories}
@@ -266,8 +284,17 @@ export function NodePalette({ onOpenBulkEdit }: { onOpenBulkEdit: () => void }) 
 
       <div className="flex-1 overflow-y-auto">
         {categories.map((cat) => {
-          const isCollapsed = collapsedCategories.has(cat);
-          const catNodes = nodeDefinitions.filter((n) => n.category === cat);
+          const allCatNodes = nodeDefinitions.filter((n) => n.category === cat);
+          const query = searchQuery.trim().toLowerCase();
+          const catNodes = query
+            ? allCatNodes.filter((def) =>
+                def.label.toLowerCase().includes(query) ||
+                (def.labelEn?.toLowerCase().includes(query)) ||
+                tCat(cat).toLowerCase().includes(query)
+              )
+            : allCatNodes;
+          if (query && catNodes.length === 0) return null;
+          const isCollapsed = query ? false : collapsedCategories.has(cat);
           return (
             <div key={cat} className="px-2 pt-2 pb-1">
               <button
@@ -285,7 +312,7 @@ export function NodePalette({ onOpenBulkEdit }: { onOpenBulkEdit: () => void }) 
                   style={{ backgroundColor: CATEGORY_COLORS[cat] || DEFAULT_CATEGORY_COLOR }}
                 />
                 <span>{tCat(cat)}</span>
-                <span className="text-[10px] text-gray-300 ml-auto">{catNodes.length}</span>
+                <span className="text-[10px] text-gray-300 ml-auto">{query ? `${catNodes.length}/${allCatNodes.length}` : catNodes.length}</span>
               </button>
               {!isCollapsed &&
                 catNodes.map((def) =>
