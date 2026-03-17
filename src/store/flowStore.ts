@@ -204,6 +204,7 @@ export const useFlowStore = create<FlowState>()(
         avgCallMinutes: state.avgCallMinutes,
         currency: state.currency,
         exchangeRate: state.exchangeRate,
+        language: state.language,
       }),
       merge: (persisted, current) => {
         const p = persisted as Partial<PersistedState> | undefined;

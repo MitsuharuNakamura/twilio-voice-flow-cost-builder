@@ -1,5 +1,5 @@
 import { useFlowStore } from '../store/flowStore';
-import { getTranslation, translateCategory, translateNodeLabel, type TranslationKey, type Language } from './translations';
+import { getTranslation, translateCategory, translateNodeLabel, type TranslationKey } from './translations';
 
 export type { Language } from './translations';
 export { translateCategory, translateNodeLabel } from './translations';
