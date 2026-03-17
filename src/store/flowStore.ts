@@ -222,9 +222,11 @@ export const useFlowStore = create<FlowState>()(
         const p = persisted as Partial<PersistedState> | undefined;
         const merged = { ...current, ...p };
         if (p?.nodeDefinitions) {
-          const defaultMap = new Map(DEFAULT_NODE_DEFINITIONS.map((d) => [d.id, d]));
-          const existingIds = new Set(p.nodeDefinitions.map((d) => d.id));
-          const newDefaults = DEFAULT_NODE_DEFINITIONS.filter((d) => !existingIds.has(d.id));
+          // Build default lookup by id (use first occurrence for duplicates)
+          const defaultMap = new Map<string, NodeDefinition>();
+          for (const d of DEFAULT_NODE_DEFINITIONS) {
+            if (!defaultMap.has(d.id)) defaultMap.set(d.id, d);
+          }
 
           // Backfill missing fields (e.g. labelEn) from defaults
           const backfilled = p.nodeDefinitions.map((d) => {
@@ -235,20 +237,19 @@ export const useFlowStore = create<FlowState>()(
             return d;
           });
 
-          if (newDefaults.length > 0) {
-            // Build ordered list: keep default order, insert persisted customizations
-            const defaultIds = new Set(DEFAULT_NODE_DEFINITIONS.map((d) => d.id));
-            const customNodes = backfilled.filter((d) => !defaultIds.has(d.id));
-            const result: NodeDefinition[] = [];
-            for (const def of DEFAULT_NODE_DEFINITIONS) {
-              const persisted = backfilled.find((d) => d.id === def.id);
-              result.push(persisted ?? def);
-            }
-            result.push(...customNodes);
-            merged.nodeDefinitions = result;
-          } else {
-            merged.nodeDefinitions = backfilled;
+          // Always rebuild: keep default order, merge persisted customizations, append custom nodes
+          const defaultIds = new Set(DEFAULT_NODE_DEFINITIONS.map((d) => d.id));
+          const persistedMap = new Map<string, NodeDefinition>();
+          for (const d of backfilled) {
+            persistedMap.set(d.id, d);
           }
+          const customNodes = backfilled.filter((d) => !defaultIds.has(d.id));
+          const result: NodeDefinition[] = [];
+          for (const def of DEFAULT_NODE_DEFINITIONS) {
+            result.push(persistedMap.get(def.id) ?? def);
+          }
+          result.push(...customNodes);
+          merged.nodeDefinitions = result;
         }
         return merged;
       },

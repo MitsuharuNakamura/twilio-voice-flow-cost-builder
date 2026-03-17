@@ -70,7 +70,7 @@ export const DEFAULT_NODE_DEFINITIONS: NodeDefinition[] = [
   // Twilio 着信
   { id: 'tw050',    label: '着信(日本 050番号)',   labelEn: 'Inbound Japan 050 Number',          category: 'Twilio着信',     billing: 'per_minute', unitPrice: 0.0100, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp' },
   { id: 'twlocal',  label: '着信(日本 市外局番)',  labelEn: 'Inbound Japan Area Code',           category: 'Twilio着信',     billing: 'per_minute', unitPrice: 0.0100, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp' },
-  { id: 'twlocal',  label: '着信(日本 Toll-Free)', labelEn: 'Inbound Japan Toll-Free',           category: 'Twilio着信',     billing: 'per_minute', unitPrice: 0.2780, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp' },
+  { id: 'twtollfree', label: '着信(日本 Toll-Free)', labelEn: 'Inbound Japan Toll-Free',         category: 'Twilio着信',     billing: 'per_minute', unitPrice: 0.2780, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp' },
 
   // Twilio 発信
   { id: 'twout_fx', label: '発信 (日本-固定宛)',    labelEn: 'Outbound (Japan Landline)',        category: 'Twilio発信',     billing: 'per_minute', unitPrice: 0.0746, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing/jp' },
