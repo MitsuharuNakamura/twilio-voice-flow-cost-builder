@@ -11,7 +11,7 @@ import {
   addEdge,
 } from '@xyflow/react';
 import { DEFAULT_NODE_DEFINITIONS, type NodeDefinition, type TtsConfig } from '../data/nodeDefinitions';
-import type { EditionConfig, EditionType } from '../data/editions';
+import type { EditionConfig, EditionType, SupportPlanType } from '../data/editions';
 import type { Language } from '../i18n/translations';
 
 export interface SavedFlow {
@@ -81,6 +81,7 @@ interface FlowState {
   removeCustomChars: (instanceId: string) => void;
   setEdition: (edition: EditionType) => void;
   toggleAddon: (addonId: string) => void;
+  setSupportPlan: (plan: SupportPlanType) => void;
   addNodeDefinition: (def: NodeDefinition) => void;
   updateNodeDefinition: (id: string, updates: Partial<Omit<NodeDefinition, 'id'>>) => void;
   deleteNodeDefinition: (id: string) => void;
@@ -124,7 +125,7 @@ export const useFlowStore = create<FlowState>()(
       customDurations: {},
       ttsConfigs: {},
       customChars: {},
-      editionConfig: { edition: 'none' as EditionType, addons: [] },
+      editionConfig: { edition: 'none' as EditionType, addons: [], supportPlan: 'developer' as SupportPlanType },
 
       onNodesChange: (changes) => {
         set({ nodes: applyNodeChanges(changes, get().nodes) });
@@ -184,6 +185,8 @@ export const useFlowStore = create<FlowState>()(
           : [...current.addons, addonId];
         set({ editionConfig: { ...current, addons } });
       },
+      setSupportPlan: (plan) =>
+        set({ editionConfig: { ...get().editionConfig, supportPlan: plan } }),
       addNodeDefinition: (def) =>
         set({ nodeDefinitions: [...get().nodeDefinitions, def] }),
       updateNodeDefinition: (id, updates) =>

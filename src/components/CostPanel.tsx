@@ -3,7 +3,7 @@ import { MarkerType } from '@xyflow/react';
 import { useFlowStore } from '../store/flowStore';
 import { calculateCosts } from '../utils/costCalculator';
 import { BILLING_LABELS, TTS_TYPE_LABELS, type BillingType } from '../data/nodeDefinitions';
-import { EDITIONS, ADDONS, calculateEditionCost } from '../data/editions';
+import { EDITIONS, ADDONS, SUPPORT_PLANS, calculateEditionCost } from '../data/editions';
 import { NodeSettingsPanel } from './NodeSettingsPanel';
 import { useI18n } from '../i18n';
 
@@ -84,15 +84,19 @@ export function CostPanel() {
   const editionConfig = useFlowStore((s) => s.editionConfig);
   const setEdition = useFlowStore((s) => s.setEdition);
   const toggleAddon = useFlowStore((s) => s.toggleAddon);
+  const setSupportPlan = useFlowStore((s) => s.setSupportPlan);
 
   const { t, lang } = useI18n();
 
   const [editionOpen, setEditionOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
 
   const { items, total, perCall } = calculateCosts(nodes, monthlyCallCount, avgCallMinutes, customPrices, customDurations, getNodeDef, ttsConfigs, customChars);
 
   const editionResult = calculateEditionCost(editionConfig, total);
   const hasEdition = editionConfig.edition !== 'none' || editionConfig.addons.length > 0;
+  const hasSupportPlan = editionConfig.supportPlan !== 'developer';
+  const hasExtras = hasEdition || hasSupportPlan;
   const grandTotal = total + editionResult.totalEditionCost;
 
   const formatPrice = (usd: number) => {
@@ -104,6 +108,7 @@ export function CostPanel() {
   };
 
   const selectedEditionDef = EDITIONS.find((e) => e.id === editionConfig.edition);
+  const selectedSupportDef = SUPPORT_PLANS.find((s) => s.id === editionConfig.supportPlan);
 
   return (
     <div className="w-72 bg-gray-50 border-l border-gray-200 flex flex-col shrink-0 overflow-y-auto">
@@ -270,6 +275,75 @@ export function CostPanel() {
         )}
       </div>
 
+      {/* Support Plan */}
+      <div className="border-b border-gray-200">
+        <button
+          onClick={() => setSupportOpen(!supportOpen)}
+          className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          <span className="flex items-center gap-1">
+            <span
+              className="text-[10px] text-gray-400 w-3 text-center transition-transform"
+              style={{ transform: supportOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+            >
+              ▼
+            </span>
+            {t('supportPlan')}
+          </span>
+          {hasSupportPlan && (
+            <span className="text-[10px] bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded">
+              {formatPrice(editionResult.supportCost)}
+            </span>
+          )}
+        </button>
+
+        {supportOpen && (
+          <div className="px-3 pb-3 space-y-3">
+            <div className="space-y-1">
+              {SUPPORT_PLANS.map((plan) => (
+                <label
+                  key={plan.id}
+                  className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer hover:text-gray-800"
+                >
+                  <input
+                    type="radio"
+                    name="supportPlan"
+                    checked={editionConfig.supportPlan === plan.id}
+                    onChange={() => setSupportPlan(plan.id)}
+                    className="text-blue-500"
+                  />
+                  <span className="flex-1">
+                    {lang === 'ja' ? plan.label : plan.labelEn}
+                  </span>
+                  {plan.usagePercent > 0 && (
+                    <span className="text-[10px] text-gray-400 shrink-0">
+                      ${plan.minFee.toLocaleString()}/{plan.usagePercent}%
+                    </span>
+                  )}
+                </label>
+              ))}
+            </div>
+
+            {hasSupportPlan && selectedSupportDef && (
+              <div className="p-2 bg-teal-50 rounded text-xs space-y-1">
+                <div className="flex justify-between text-gray-600">
+                  <span>{t('editionMinFee')}</span>
+                  <span>${selectedSupportDef.minFee.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>{t('editionUsageFee')} ({selectedSupportDef.usagePercent}%)</span>
+                  <span>{formatPrice(editionResult.supportUsageFee)}</span>
+                </div>
+                <div className="flex justify-between font-medium text-teal-700">
+                  <span>→ {t('applied')}</span>
+                  <span>{formatPrice(editionResult.supportCost)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Cost breakdown */}
       <div className="p-3 flex-1">
         <h3 className="text-xs font-semibold text-gray-500 mb-2">{t('costBreakdown')}</h3>
@@ -329,7 +403,7 @@ export function CostPanel() {
         {/* Totals */}
         {items.length > 0 && (
           <div className="mt-3 pt-2 border-t border-gray-200 space-y-1">
-            {hasEdition ? (
+            {hasExtras ? (
               <>
                 <div className="flex justify-between text-xs text-gray-600">
                   <span>{t('usageTotal')}</span>
@@ -337,7 +411,7 @@ export function CostPanel() {
                 </div>
                 {editionConfig.edition !== 'none' && (
                   <div className="flex justify-between text-xs text-amber-600">
-                    <span>{t('editionFee')} ({lang === 'ja' ? selectedEditionDef?.label : selectedEditionDef?.labelEn})</span>
+                    <span>{t('editionFee')}</span>
                     <span>{formatPrice(editionResult.editionCost)}</span>
                   </div>
                 )}
@@ -345,6 +419,12 @@ export function CostPanel() {
                   <div className="flex justify-between text-xs text-amber-600">
                     <span>{t('addonFee')}</span>
                     <span>{formatPrice(editionResult.addonCost)}</span>
+                  </div>
+                )}
+                {hasSupportPlan && (
+                  <div className="flex justify-between text-xs text-teal-600">
+                    <span>{t('supportFee')}</span>
+                    <span>{formatPrice(editionResult.supportCost)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm font-bold text-gray-800 pt-1 border-t border-gray-100">

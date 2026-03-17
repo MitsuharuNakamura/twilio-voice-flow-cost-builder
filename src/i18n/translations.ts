@@ -150,6 +150,8 @@ const translations = {
   addonFee: { ja: 'アドオン費用', en: 'Add-on Fee' },
   grandTotal: { ja: '総合計 (月額)', en: 'Grand Total (Monthly)' },
   applied: { ja: '適用', en: 'Applied' },
+  supportPlan: { ja: 'サポートプラン', en: 'Support Plan' },
+  supportFee: { ja: 'サポート費用', en: 'Support Fee' },
 
   // ===== Language toggle =====
   language: { ja: '言語', en: 'Language' },
