@@ -4,10 +4,11 @@ import {
   CATEGORY_COLORS,
   DEFAULT_CATEGORY_COLOR,
   BILLING_LABELS,
-  BILLING_OPTIONS,
+  getBillingOptions,
   type BillingType,
   type NodeDefinition,
 } from '../data/nodeDefinitions';
+import { useI18n } from '../i18n';
 
 function NodeDefEditor({
   initial,
@@ -20,6 +21,7 @@ function NodeDefEditor({
   onSave: (def: NodeDefinition) => void;
   onCancel: () => void;
 }) {
+  const { t, lang, tCat } = useI18n();
   const [label, setLabel] = useState(initial?.label ?? '');
   const [category, setCategory] = useState(initial?.category ?? categories[0] ?? '');
   const [newCategory, setNewCategory] = useState('');
@@ -29,6 +31,8 @@ function NodeDefEditor({
     initial ? String(initial.unitPrice) : '0',
   );
   const [twilioUrl, setTwilioUrl] = useState(initial?.twilioUrl ?? '');
+
+  const billingOptions = getBillingOptions(lang);
 
   const handleSave = () => {
     if (!label.trim()) return;
@@ -48,19 +52,19 @@ function NodeDefEditor({
   return (
     <div className="p-3 space-y-2 bg-white border border-gray-300 rounded-lg mx-2 my-2 shadow-sm">
       <div className="text-xs font-bold text-gray-700">
-        {initial ? 'ノード編集' : '新規ノード作成'}
+        {initial ? t('editNode') : t('createNode')}
       </div>
       <div>
-        <label className="text-[10px] text-gray-500">名前</label>
+        <label className="text-[10px] text-gray-500">{t('name')}</label>
         <input
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
-          placeholder="ノード名"
+          placeholder={t('nodeName')}
         />
       </div>
       <div>
-        <label className="text-[10px] text-gray-500">カテゴリ</label>
+        <label className="text-[10px] text-gray-500">{t('category')}</label>
         {!useNewCategory ? (
           <div className="flex gap-1">
             <select
@@ -69,15 +73,15 @@ function NodeDefEditor({
               className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
             >
               {categories.map((c) => (
-                <option key={c} value={c}>{c}</option>
+                <option key={c} value={c}>{tCat(c)}</option>
               ))}
             </select>
             <button
               onClick={() => setUseNewCategory(true)}
               className="px-1.5 text-[10px] text-blue-500 hover:text-blue-700 shrink-0"
-              title="新規カテゴリ"
+              title={t('category')}
             >
-              +新規
+              {t('newCategoryBtn')}
             </button>
           </div>
         ) : (
@@ -86,31 +90,31 @@ function NodeDefEditor({
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
               className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
-              placeholder="新しいカテゴリ名"
+              placeholder={t('newCategoryPlaceholder')}
             />
             <button
               onClick={() => setUseNewCategory(false)}
               className="px-1.5 text-[10px] text-gray-400 hover:text-gray-600 shrink-0"
             >
-              既存
+              {t('existing')}
             </button>
           </div>
         )}
       </div>
       <div>
-        <label className="text-[10px] text-gray-500">課金タイプ</label>
+        <label className="text-[10px] text-gray-500">{t('billingType')}</label>
         <select
           value={billing}
           onChange={(e) => setBilling(e.target.value as BillingType)}
           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
         >
-          {BILLING_OPTIONS.map((opt) => (
+          {billingOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
       </div>
       <div>
-        <label className="text-[10px] text-gray-500">単価 (USD)</label>
+        <label className="text-[10px] text-gray-500">{t('unitPriceUsd')}</label>
         <input
           type="text"
           inputMode="decimal"
@@ -123,7 +127,7 @@ function NodeDefEditor({
         />
       </div>
       <div>
-        <label className="text-[10px] text-gray-500">料金ページURL (任意)</label>
+        <label className="text-[10px] text-gray-500">{t('pricingUrlOptional')}</label>
         <input
           value={twilioUrl}
           onChange={(e) => setTwilioUrl(e.target.value)}
@@ -137,13 +141,13 @@ function NodeDefEditor({
           disabled={!label.trim()}
           className="flex-1 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-40"
         >
-          保存
+          {t('save')}
         </button>
         <button
           onClick={onCancel}
           className="flex-1 px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
         >
-          キャンセル
+          {t('cancel')}
         </button>
       </div>
     </div>
@@ -156,6 +160,8 @@ export function NodePalette({ onOpenBulkEdit }: { onOpenBulkEdit: () => void }) 
   const updateNodeDefinition = useFlowStore((s) => s.updateNodeDefinition);
   const deleteNodeDefinition = useFlowStore((s) => s.deleteNodeDefinition);
   const resetNodeDefinitions = useFlowStore((s) => s.resetNodeDefinitions);
+
+  const { t, tCat, tNode } = useI18n();
 
   const [showCreate, setShowCreate] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -210,12 +216,12 @@ export function NodePalette({ onOpenBulkEdit }: { onOpenBulkEdit: () => void }) 
     <div className="w-60 bg-gray-50 border-r border-gray-200 overflow-y-auto shrink-0 flex flex-col">
       <div className="p-3 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-gray-700">ノードパレット</h2>
+          <h2 className="text-sm font-bold text-gray-700">{t('nodePalette')}</h2>
           <button
             onClick={() => { setShowCreate(true); setEditingId(null); }}
             className="px-1.5 py-0.5 text-[10px] bg-blue-500 text-white rounded hover:bg-blue-600"
           >
-            + 新規
+            {t('newNode')}
           </button>
         </div>
         <div className="flex items-center gap-2 mt-1.5">
@@ -223,16 +229,16 @@ export function NodePalette({ onOpenBulkEdit }: { onOpenBulkEdit: () => void }) 
             onClick={onOpenBulkEdit}
             className="px-1.5 py-0.5 text-[10px] text-blue-500 hover:text-blue-700 hover:underline"
           >
-            一括編集
+            {t('bulkEdit')}
           </button>
           <button
             onClick={() => {
-              if (confirm('ノード定義を初期値に戻しますか？追加・編集した内容はすべてリセットされます。'))
+              if (confirm(t('confirmResetDefs')))
                 resetNodeDefinitions();
             }}
             className="px-1.5 py-0.5 text-[10px] text-gray-400 hover:text-red-500 hover:underline"
           >
-            初期値に戻す
+            {t('resetToDefaults')}
           </button>
         </div>
       </div>
@@ -266,7 +272,7 @@ export function NodePalette({ onOpenBulkEdit }: { onOpenBulkEdit: () => void }) 
                   className="inline-block w-2 h-2 rounded-full shrink-0"
                   style={{ backgroundColor: CATEGORY_COLORS[cat] || DEFAULT_CATEGORY_COLOR }}
                 />
-                <span>{cat}</span>
+                <span>{tCat(cat)}</span>
                 <span className="text-[10px] text-gray-300 ml-auto">{catNodes.length}</span>
               </button>
               {!isCollapsed &&
@@ -276,7 +282,7 @@ export function NodePalette({ onOpenBulkEdit }: { onOpenBulkEdit: () => void }) 
                       key={def.id}
                       initial={def}
                       categories={categories}
-            
+
                       onSave={handleUpdate}
                       onCancel={() => setEditingId(null)}
                     />
@@ -292,7 +298,7 @@ export function NodePalette({ onOpenBulkEdit }: { onOpenBulkEdit: () => void }) 
                         style={{ backgroundColor: CATEGORY_COLORS[cat] || DEFAULT_CATEGORY_COLOR }}
                       />
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs font-medium text-gray-800 truncate">{def.label}</div>
+                        <div className="text-xs font-medium text-gray-800 truncate">{tNode(def.id, def.label)}</div>
                         <div className="text-[10px] text-gray-400">
                           {def.billing === 'free'
                             ? 'Free'
@@ -304,18 +310,18 @@ export function NodePalette({ onOpenBulkEdit }: { onOpenBulkEdit: () => void }) 
                           onClick={(e) => { e.stopPropagation(); setEditingId(def.id); setShowCreate(false); }}
                           onMouseDown={(e) => e.stopPropagation()}
                           className="p-0.5 text-[10px] text-gray-400 hover:text-blue-500"
-                          title="編集"
+                          title={t('edit')}
                         >
                           ✎
                         </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (confirm(`「${def.label}」を削除しますか？`)) handleDelete(def.id);
+                            if (confirm(t('confirmDelete', def.label))) handleDelete(def.id);
                           }}
                           onMouseDown={(e) => e.stopPropagation()}
                           className="p-0.5 text-[10px] text-gray-400 hover:text-red-500"
-                          title="削除"
+                          title={t('delete')}
                         >
                           ×
                         </button>

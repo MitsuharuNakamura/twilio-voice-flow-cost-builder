@@ -11,6 +11,7 @@ import {
   addEdge,
 } from '@xyflow/react';
 import { DEFAULT_NODE_DEFINITIONS, type NodeDefinition } from '../data/nodeDefinitions';
+import type { Language } from '../i18n/translations';
 
 export interface SavedFlow {
   name: string;
@@ -46,6 +47,7 @@ interface FlowState {
   avgCallMinutes: number;
   currency: 'JPY' | 'USD';
   exchangeRate: number;
+  language: Language;
   customPrices: Record<string, number>;
   customDurations: Record<string, number>;
 
@@ -62,6 +64,7 @@ interface FlowState {
   setAvgCallMinutes: (minutes: number) => void;
   setCurrency: (currency: 'JPY' | 'USD') => void;
   setExchangeRate: (rate: number) => void;
+  setLanguage: (lang: Language) => void;
   setCustomPrice: (instanceId: string, price: number) => void;
   removeCustomPrice: (instanceId: string) => void;
   setCustomDuration: (instanceId: string, minutes: number) => void;
@@ -86,6 +89,7 @@ const PERSISTED_KEYS = [
   'avgCallMinutes',
   'currency',
   'exchangeRate',
+  'language',
 ] as const;
 
 type PersistedState = Pick<FlowState, (typeof PERSISTED_KEYS)[number]>;
@@ -102,6 +106,7 @@ export const useFlowStore = create<FlowState>()(
       avgCallMinutes: 3,
       currency: 'JPY',
       exchangeRate: 150,
+      language: 'ja' as Language,
       customPrices: {},
       customDurations: {},
 
@@ -129,6 +134,7 @@ export const useFlowStore = create<FlowState>()(
       setAvgCallMinutes: (minutes) => set({ avgCallMinutes: minutes }),
       setCurrency: (currency) => set({ currency }),
       setExchangeRate: (rate) => set({ exchangeRate: rate }),
+      setLanguage: (lang) => set({ language: lang }),
       setCustomPrice: (instanceId, price) =>
         set({ customPrices: { ...get().customPrices, [instanceId]: price } }),
       removeCustomPrice: (instanceId) => {

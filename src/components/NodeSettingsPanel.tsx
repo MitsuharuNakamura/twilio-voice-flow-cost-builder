@@ -3,6 +3,7 @@ import { useFlowStore } from '../store/flowStore';
 import { BILLING_LABELS } from '../data/nodeDefinitions';
 import type { ShapeNodeData } from './nodes/ShapeNode';
 import { SHAPE_DEFAULTS } from './nodes/ShapeNode';
+import { useI18n } from '../i18n';
 
 function ColorInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
@@ -26,6 +27,7 @@ function ColorInput({ label, value, onChange }: { label: string; value: string; 
 
 function ShapeSettingsPanel({ nodeId, data }: { nodeId: string; data: ShapeNodeData }) {
   const updateNodeData = useFlowStore((s) => s.updateNodeData);
+  const { t } = useI18n();
 
   const update = (patch: Partial<ShapeNodeData>) => {
     updateNodeData(nodeId, patch);
@@ -35,25 +37,25 @@ function ShapeSettingsPanel({ nodeId, data }: { nodeId: string; data: ShapeNodeD
 
   return (
     <div className="border-t border-gray-200 p-3">
-      <h3 className="text-sm font-bold text-gray-700 mb-2">図形設定</h3>
+      <h3 className="text-sm font-bold text-gray-700 mb-2">{t('shapeSettings')}</h3>
       <div className="text-xs text-gray-400 mb-3">
-        {data.shape === 'rect' ? '四角形' : data.shape === 'circle' ? '円' : 'テキスト'}
+        {data.shape === 'rect' ? t('shapeRect2') : data.shape === 'circle' ? t('shapeCircle2') : t('shapeText2')}
       </div>
 
       <div className="space-y-2">
         <div>
-          <label className="text-xs text-gray-600 block mb-1">テキスト</label>
+          <label className="text-xs text-gray-600 block mb-1">{t('text')}</label>
           <input
             type="text"
             value={data.label}
             onChange={(e) => update({ label: e.target.value })}
             className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
-            placeholder="ラベル"
+            placeholder={t('label')}
           />
         </div>
 
         <div>
-          <label className="text-xs text-gray-600 block mb-1">文字サイズ</label>
+          <label className="text-xs text-gray-600 block mb-1">{t('fontSize')}</label>
           <input
             type="range"
             min={8}
@@ -65,12 +67,12 @@ function ShapeSettingsPanel({ nodeId, data }: { nodeId: string; data: ShapeNodeD
           <span className="text-[10px] text-gray-400">{data.fontSize}px</span>
         </div>
 
-        <ColorInput label="文字色" value={data.textColor} onChange={(v) => update({ textColor: v })} />
-        <ColorInput label="背景色" value={data.bgColor} onChange={(v) => update({ bgColor: v })} />
-        <ColorInput label="枠線色" value={data.borderColor} onChange={(v) => update({ borderColor: v })} />
+        <ColorInput label={t('textColor')} value={data.textColor} onChange={(v) => update({ textColor: v })} />
+        <ColorInput label={t('bgColor')} value={data.bgColor} onChange={(v) => update({ bgColor: v })} />
+        <ColorInput label={t('borderColor')} value={data.borderColor} onChange={(v) => update({ borderColor: v })} />
 
         <div>
-          <label className="text-xs text-gray-600 block mb-1">枠線の太さ</label>
+          <label className="text-xs text-gray-600 block mb-1">{t('borderWidth')}</label>
           <input
             type="range"
             min={0}
@@ -86,7 +88,7 @@ function ShapeSettingsPanel({ nodeId, data }: { nodeId: string; data: ShapeNodeD
           onClick={() => update({ ...defaults })}
           className="text-xs text-blue-500 hover:underline mt-1"
         >
-          デフォルトに戻す
+          {t('resetToDefault')}
         </button>
       </div>
     </div>
@@ -104,6 +106,8 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
   const setCustomDuration = useFlowStore((s) => s.setCustomDuration);
   const removeCustomDuration = useFlowStore((s) => s.removeCustomDuration);
   const updateNodeData = useFlowStore((s) => s.updateNodeData);
+
+  const { t, tNode } = useI18n();
 
   const node = nodes.find((n) => n.id === nodeId);
   const defId = node?.data?.defId as string | undefined;
@@ -127,19 +131,21 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
 
   if (!node || !def) return null;
 
+  const displayLabel = tNode(def.id, def.label);
+
   return (
     <div className="border-t border-gray-200 p-3">
-      <h3 className="text-sm font-bold text-gray-700 mb-2">ノード設定</h3>
+      <h3 className="text-sm font-bold text-gray-700 mb-2">{t('nodeSettings')}</h3>
       <div className="text-xs text-gray-400 mb-2">
-        定義: {def.label} / 課金タイプ: {BILLING_LABELS[def.billing]}
+        {t('definitionInfo', displayLabel, BILLING_LABELS[def.billing])}
       </div>
       <div className="mb-2">
-        <label className="text-xs text-gray-600 block mb-1">表示ラベル</label>
+        <label className="text-xs text-gray-600 block mb-1">{t('displayLabel')}</label>
         <input
           type="text"
           value={(node.data?.customLabel as string) ?? ''}
           onChange={(e) => updateNodeData(node.id, { customLabel: e.target.value || undefined })}
-          placeholder={def.label}
+          placeholder={displayLabel}
           className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
         />
         {(node.data?.customLabel as string) && (
@@ -147,14 +153,14 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
             onClick={() => updateNodeData(node.id, { customLabel: undefined })}
             className="text-xs text-blue-500 hover:underline mt-1"
           >
-            デフォルトに戻す ({def.label})
+            {t('resetToDefaultWithLabel', displayLabel)}
           </button>
         )}
       </div>
 
       {def.billing !== 'free' && (
         <div className="mb-2">
-          <label className="text-xs text-gray-600 block mb-1">単価 (USD)</label>
+          <label className="text-xs text-gray-600 block mb-1">{t('unitPriceUsd')}</label>
           <input
             type="text"
             inputMode="decimal"
@@ -185,7 +191,7 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
               }}
               className="text-xs text-blue-500 hover:underline mt-1"
             >
-              デフォルトに戻す (${def.unitPrice.toFixed(4)})
+              {t('resetToDefaultWithPrice', def.unitPrice.toFixed(4))}
             </button>
           )}
         </div>
@@ -194,10 +200,10 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
       {def.billing === 'per_minute' && (
         <div className="mb-2">
           <label className="text-xs text-gray-600 block mb-1">
-            このノードの通話時間 (分)
+            {t('nodeDuration')}
           </label>
           <p className="text-[10px] text-gray-400 mb-1">
-            転送などで区間が分かれる場合、このノードが使われる時間を設定
+            {t('nodeDurationHelp')}
           </p>
           <input
             type="text"
@@ -227,7 +233,7 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
               }}
               className="text-xs text-blue-500 hover:underline mt-1"
             >
-              デフォルトに戻す (全体: {avgCallMinutes}分)
+              {t('resetToDefaultDuration', avgCallMinutes)}
             </button>
           )}
         </div>
@@ -240,7 +246,7 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
           rel="noopener noreferrer"
           className="text-xs text-blue-500 hover:underline flex items-center gap-1"
         >
-          Twilio公式料金ページで確認する →
+          {t('checkTwilioPricing')}
         </a>
       )}
     </div>

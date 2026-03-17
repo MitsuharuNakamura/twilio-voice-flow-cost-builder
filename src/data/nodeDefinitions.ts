@@ -70,3 +70,16 @@ export const BILLING_OPTIONS: { value: BillingType; label: string }[] = [
   { value: 'free',       label: '無料 (free)' },
   { value: 'custom',     label: 'カスタム (custom)' },
 ];
+
+import type { Language } from '../i18n/translations';
+export function getBillingOptions(lang: Language): { value: BillingType; label: string }[] {
+  if (lang === 'en') {
+    return [
+      { value: 'per_minute', label: '/min (per minute)' },
+      { value: 'per_call',   label: '/call (per call)' },
+      { value: 'free',       label: 'Free' },
+      { value: 'custom',     label: 'Custom' },
+    ];
+  }
+  return BILLING_OPTIONS;
+}

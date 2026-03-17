@@ -14,6 +14,7 @@ import { useFlowStore } from '../store/flowStore';
 import type { NodeDefinition } from '../data/nodeDefinitions';
 import { TwilioNode } from './nodes/TwilioNode';
 import { ShapeNode, SHAPE_DEFAULTS, type ShapeType } from './nodes/ShapeNode';
+import { useI18n } from '../i18n';
 
 const nodeTypes: NodeTypes = {
   twilioNode: TwilioNode,
@@ -49,7 +50,7 @@ function createFlowNode(
 
 // Built-in template definitions
 interface TemplateConfig {
-  label: string;
+  labelKey: string;
   nodes: string[];
   edges: number[][];
   layout?: { rows?: Record<number, number>; cols?: Record<number, number> };
@@ -57,7 +58,7 @@ interface TemplateConfig {
 
 const TEMPLATES: Record<string, TemplateConfig> = {
   basicForward: {
-    label: '受電: 基本転送',
+    labelKey: 'tplBasicForward',
     nodes: ['caller', 'nttcom', 'tw050', 'studio', 'twout_fx', 'twout_mb'],
     edges: [
       [0, 1], [1, 2], [2, 3], [3, 4], [3, 5],
@@ -65,21 +66,21 @@ const TEMPLATES: Record<string, TemplateConfig> = {
     layout: { rows: { 4: -1, 5: 1 }, cols: { 4: 4, 5: 4 } },
   },
   aiInbound: {
-    label: '受電: AI通話',
+    labelKey: 'tplAiInbound',
     nodes: ['caller', 'nttcom', 'tw050', 'mstream', 'crelay', 'extapi'],
     edges: [
       [0, 1], [1, 2], [2, 3], [3, 4], [4, 5],
     ],
   },
   outboundCall: {
-    label: '架電: 基本発信',
+    labelKey: 'tplOutboundCall',
     nodes: ['studio', 'twout_fx', 'callee'],
     edges: [
       [0, 1], [1, 2],
     ],
   },
   aiInboundToOutbound: {
-    label: '受電→架電転送',
+    labelKey: 'tplAiInboundToOutbound',
     nodes: ['caller', 'nttcom', 'tw050', 'crelay', 'extapi', 'twout_mb', 'callee'],
     edges: [
       [0, 1], [1, 2], [2, 3], [3, 4], [3, 5], [5, 6],
@@ -108,6 +109,10 @@ export function FlowBuilder() {
   const saveCurrentFlow = useFlowStore((s) => s.saveCurrentFlow);
   const loadSavedFlow = useFlowStore((s) => s.loadSavedFlow);
   const deleteSavedFlow = useFlowStore((s) => s.deleteSavedFlow);
+  const language = useFlowStore((s) => s.language);
+  const setLanguage = useFlowStore((s) => s.setLanguage);
+
+  const { t } = useI18n();
 
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showLoadMenu, setShowLoadMenu] = useState(false);
@@ -274,7 +279,7 @@ export function FlowBuilder() {
   };
 
   const handleDeleteSaved = (index: number, name: string) => {
-    if (confirm(`「${name}」を削除しますか？`)) {
+    if (confirm(t('confirmDelete', name))) {
       deleteSavedFlow(index);
       setSavedFlowsVersion((v) => v + 1);
     }
@@ -284,18 +289,18 @@ export function FlowBuilder() {
     <div className="flex-1 flex flex-col" ref={reactFlowWrapper}>
       {/* Toolbar */}
       <div className="flex items-center gap-2 px-3 py-2 bg-white border-b border-gray-200 shrink-0 flex-wrap">
-        <span className="text-sm font-bold text-gray-700 mr-1">ツールバー</span>
+        <span className="text-sm font-bold text-gray-700 mr-1">{t('toolbar')}</span>
         <button
           onClick={deleteSelected}
           className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded border border-red-200 hover:bg-red-100"
         >
-          選択削除
+          {t('deleteSelected')}
         </button>
         <button
           onClick={clearAll}
           className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded border border-gray-200 hover:bg-gray-200"
         >
-          クリア
+          {t('clear')}
         </button>
 
         <div className="w-px h-5 bg-gray-200 mx-1" />
@@ -307,7 +312,7 @@ export function FlowBuilder() {
             disabled={nodes.length === 0}
             className="px-2 py-1 text-xs bg-emerald-50 text-emerald-600 rounded border border-emerald-200 hover:bg-emerald-100 disabled:opacity-40"
           >
-            保存
+            {t('save')}
           </button>
         </div>
         <div className="relative">
@@ -315,13 +320,13 @@ export function FlowBuilder() {
             onClick={() => { setShowLoadMenu(!showLoadMenu); setShowSaveDialog(false); }}
             className="px-2 py-1 text-xs bg-amber-50 text-amber-600 rounded border border-amber-200 hover:bg-amber-100"
           >
-            読込 ({savedFlows.length})
+            {t('load')} ({savedFlows.length})
           </button>
           {showLoadMenu && (
             <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
               {savedFlows.length === 0 ? (
                 <div className="px-3 py-4 text-xs text-gray-400 text-center">
-                  保存されたフローはありません
+                  {t('noSavedFlows')}
                 </div>
               ) : (
                 savedFlows.map((flow, i) => (
@@ -337,9 +342,9 @@ export function FlowBuilder() {
                         {flow.name}
                       </div>
                       <div className="text-[10px] text-gray-400">
-                        {new Date(flow.savedAt).toLocaleString('ja-JP')}
+                        {new Date(flow.savedAt).toLocaleString(language === 'ja' ? 'ja-JP' : 'en-US')}
                         {' / '}
-                        {flow.nodes.length}ノード
+                        {flow.nodes.length} {t('nodes')}
                       </div>
                     </button>
                     <button
@@ -356,49 +361,70 @@ export function FlowBuilder() {
         </div>
 
         <div className="w-px h-5 bg-gray-200 mx-1" />
-        <span className="text-xs text-gray-400">図形:</span>
+        <span className="text-xs text-gray-400">{t('shapes')}</span>
         <button
           onClick={() => addShapeNode('rect')}
           className="px-2 py-1 text-xs bg-sky-50 text-sky-600 rounded border border-sky-200 hover:bg-sky-100"
         >
-          ▭ 四角
+          {t('shapeRect')}
         </button>
         <button
           onClick={() => addShapeNode('circle')}
           className="px-2 py-1 text-xs bg-yellow-50 text-yellow-600 rounded border border-yellow-200 hover:bg-yellow-100"
         >
-          ○ 丸
+          {t('shapeCircle')}
         </button>
         <button
           onClick={() => addShapeNode('text')}
           className="px-2 py-1 text-xs bg-gray-50 text-gray-600 rounded border border-gray-200 hover:bg-gray-100"
         >
-          T テキスト
+          {t('shapeText')}
         </button>
 
         <div className="w-px h-5 bg-gray-200 mx-1" />
-        <span className="text-xs text-gray-400">テンプレート:</span>
+        <span className="text-xs text-gray-400">{t('templates')}</span>
         {Object.entries(TEMPLATES).map(([key, tmpl]) => (
           <button
             key={key}
             onClick={() => loadTemplate(key)}
             className="px-2 py-1 text-xs bg-indigo-50 text-indigo-600 rounded border border-indigo-200 hover:bg-indigo-100"
           >
-            {tmpl.label}
+            {t(tmpl.labelKey as 'tplBasicForward')}
           </button>
         ))}
+
+        <div className="w-px h-5 bg-gray-200 mx-1" />
+        {/* Language toggle */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setLanguage('ja')}
+            className={`px-1.5 py-0.5 text-[10px] rounded ${
+              language === 'ja' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
+            }`}
+          >
+            JA
+          </button>
+          <button
+            onClick={() => setLanguage('en')}
+            className={`px-1.5 py-0.5 text-[10px] rounded ${
+              language === 'en' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
+            }`}
+          >
+            EN
+          </button>
+        </div>
       </div>
 
       {/* Save dialog */}
       {showSaveDialog && (
         <div className="absolute top-12 left-1/2 -translate-x-1/2 z-50 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-72">
-          <div className="text-xs font-bold text-gray-700 mb-2">フローを保存</div>
+          <div className="text-xs font-bold text-gray-700 mb-2">{t('saveFlow')}</div>
           <input
             autoFocus
             value={saveName}
             onChange={(e) => setSaveName(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') setShowSaveDialog(false); }}
-            placeholder="フロー名を入力"
+            placeholder={t('enterFlowName')}
             className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400 mb-2"
           />
           <div className="flex gap-2">
@@ -407,13 +433,13 @@ export function FlowBuilder() {
               disabled={!saveName.trim()}
               className="flex-1 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-40"
             >
-              保存
+              {t('save')}
             </button>
             <button
               onClick={() => setShowSaveDialog(false)}
               className="flex-1 px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
             >
-              キャンセル
+              {t('cancel')}
             </button>
           </div>
         </div>

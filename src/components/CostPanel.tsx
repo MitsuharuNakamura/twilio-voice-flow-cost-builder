@@ -3,6 +3,7 @@ import { useFlowStore } from '../store/flowStore';
 import { calculateCosts } from '../utils/costCalculator';
 import { BILLING_LABELS, type BillingType } from '../data/nodeDefinitions';
 import { NodeSettingsPanel } from './NodeSettingsPanel';
+import { useI18n } from '../i18n';
 
 const BILLING_BADGE_COLORS: Record<BillingType, string> = {
   per_minute: 'bg-blue-100 text-blue-700',
@@ -17,6 +18,7 @@ function EdgeSettingsPanel() {
   const edges = useFlowStore((s) => s.edges);
   const selectedEdgeId = useFlowStore((s) => s.selectedEdgeId);
   const updateEdge = useFlowStore((s) => s.updateEdge);
+  const { t } = useI18n();
 
   const edge = edges.find((e) => e.id === selectedEdgeId);
   if (!edge) return null;
@@ -26,7 +28,7 @@ function EdgeSettingsPanel() {
 
   return (
     <div className="border-t border-gray-200 p-3">
-      <h3 className="text-sm font-bold text-gray-700 mb-2">エッジ設定</h3>
+      <h3 className="text-sm font-bold text-gray-700 mb-2">{t('edgeSettings')}</h3>
       <div className="space-y-2">
         <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
           <input
@@ -39,7 +41,7 @@ function EdgeSettingsPanel() {
             }
             className="rounded"
           />
-          始点に矢印
+          {t('arrowAtStart')}
         </label>
         <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
           <input
@@ -52,7 +54,7 @@ function EdgeSettingsPanel() {
             }
             className="rounded"
           />
-          終点に矢印
+          {t('arrowAtEnd')}
         </label>
       </div>
     </div>
@@ -74,6 +76,8 @@ export function CostPanel() {
   const setExchangeRate = useFlowStore((s) => s.setExchangeRate);
   const setSelectedNodeId = useFlowStore((s) => s.setSelectedNodeId);
 
+  const { t } = useI18n();
+
   const { items, total, perCall } = calculateCosts(nodes, monthlyCallCount, avgCallMinutes, customPrices, customDurations, getNodeDef);
 
   const formatPrice = (usd: number) => {
@@ -87,13 +91,13 @@ export function CostPanel() {
   return (
     <div className="w-72 bg-gray-50 border-l border-gray-200 flex flex-col shrink-0 overflow-y-auto">
       <div className="p-3 border-b border-gray-200">
-        <h2 className="text-sm font-bold text-gray-700">コスト計算</h2>
+        <h2 className="text-sm font-bold text-gray-700">{t('costCalculation')}</h2>
       </div>
 
       {/* Input parameters */}
       <div className="p-3 border-b border-gray-200 space-y-2">
         <div>
-          <label className="text-xs text-gray-500 block">月間通話数</label>
+          <label className="text-xs text-gray-500 block">{t('monthlyCallCount')}</label>
           <input
             type="number"
             min="0"
@@ -103,7 +107,7 @@ export function CostPanel() {
           />
         </div>
         <div>
-          <label className="text-xs text-gray-500 block">平均通話時間 (分)</label>
+          <label className="text-xs text-gray-500 block">{t('avgCallDuration')}</label>
           <input
             type="number"
             min="0"
@@ -114,7 +118,7 @@ export function CostPanel() {
           />
         </div>
         <div>
-          <label className="text-xs text-gray-500 block mb-1">通貨</label>
+          <label className="text-xs text-gray-500 block mb-1">{t('currency')}</label>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrency('JPY')}
@@ -136,7 +140,7 @@ export function CostPanel() {
         </div>
         {currency === 'JPY' && (
           <div>
-            <label className="text-xs text-gray-500 block">為替レート (1USD = ¥)</label>
+            <label className="text-xs text-gray-500 block">{t('exchangeRate')}</label>
             <input
               type="number"
               min="1"
@@ -151,9 +155,9 @@ export function CostPanel() {
 
       {/* Cost breakdown */}
       <div className="p-3 flex-1">
-        <h3 className="text-xs font-semibold text-gray-500 mb-2">コスト内訳</h3>
+        <h3 className="text-xs font-semibold text-gray-500 mb-2">{t('costBreakdown')}</h3>
         {items.length === 0 ? (
-          <p className="text-xs text-gray-400">ノードをキャンバスに配置してください</p>
+          <p className="text-xs text-gray-400">{t('placeNodes')}</p>
         ) : (
           <div className="space-y-1">
             {items.map((item) => (
@@ -173,7 +177,7 @@ export function CostPanel() {
                   </span>
                   {item.customDuration !== undefined && item.billing === 'per_minute' && (
                     <span className="px-1 py-0.5 rounded text-[10px] shrink-0 bg-indigo-50 text-indigo-600">
-                      {item.customDuration}分
+                      {item.customDuration}{t('min')}
                     </span>
                   )}
                   {item.twilioUrl && (
@@ -183,7 +187,7 @@ export function CostPanel() {
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
                       className="text-blue-400 hover:text-blue-600 shrink-0"
-                      title="Twilio公式料金ページ"
+                      title={t('twilioPricingPage')}
                     >
                       ↗
                     </a>
@@ -198,11 +202,11 @@ export function CostPanel() {
         {items.length > 0 && (
           <div className="mt-3 pt-2 border-t border-gray-200">
             <div className="flex justify-between text-sm font-bold text-gray-800">
-              <span>合計 (月額)</span>
+              <span>{t('totalMonthly')}</span>
               <span>{formatPrice(total)}</span>
             </div>
             <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>1通話あたり</span>
+              <span>{t('perCall')}</span>
               <span>{formatPrice(perCall)}</span>
             </div>
           </div>
@@ -216,7 +220,7 @@ export function CostPanel() {
       {/* Disclaimer */}
       <div className="p-3 border-t border-gray-200">
         <p className="text-[10px] text-gray-400 leading-relaxed">
-          ※ 表示金額は概算です。最新の正確な料金はTwilio公式サイトをご確認ください。
+          {t('disclaimer')}
         </p>
       </div>
     </div>

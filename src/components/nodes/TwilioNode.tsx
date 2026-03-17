@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { CATEGORY_COLORS, DEFAULT_CATEGORY_COLOR, BILLING_LABELS, type BillingType } from '../../data/nodeDefinitions';
+import { useI18n } from '../../i18n';
 
 function TwilioNodeComponent({ data, selected }: NodeProps) {
   const label = data.label as string;
@@ -10,7 +11,10 @@ function TwilioNodeComponent({ data, selected }: NodeProps) {
   const hasCustomPrice = data.hasCustomPrice as boolean;
   const hasCustomDuration = data.hasCustomDuration as boolean;
   const customDurationMinutes = data.customDurationMinutes as number | undefined;
+  const defId = data.defId as string;
+  const customLabel = data.customLabel as string | undefined;
   const color = CATEGORY_COLORS[category] || DEFAULT_CATEGORY_COLOR;
+  const { t, tNode } = useI18n();
 
   const formatUsd = (usd: number) => {
     if (usd === 0) return '$0';
@@ -26,9 +30,9 @@ function TwilioNodeComponent({ data, selected }: NodeProps) {
       <div className="w-1 rounded-l-lg shrink-0" style={{ backgroundColor: color }} />
       <div className="px-3 py-2 flex-1 min-w-0">
         <div className="flex items-center gap-1">
-          <div className="font-bold text-sm text-gray-800 truncate">{label}</div>
+          <div className="font-bold text-sm text-gray-800 truncate">{customLabel || tNode(defId, label)}</div>
           {hasCustomPrice && (
-            <span className="text-xs text-orange-500" title="カスタム単価設定済み">
+            <span className="text-xs text-orange-500" title={t('customPriceSet')}>
               ✎
             </span>
           )}

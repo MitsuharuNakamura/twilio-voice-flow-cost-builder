@@ -3,13 +3,17 @@ import { useFlowStore } from '../store/flowStore';
 import {
   CATEGORY_COLORS,
   DEFAULT_CATEGORY_COLOR,
-  BILLING_OPTIONS,
+  getBillingOptions,
   type BillingType,
 } from '../data/nodeDefinitions';
+import { useI18n } from '../i18n';
 
 export function BulkPriceEditor({ onClose }: { onClose: () => void }) {
   const nodeDefinitions = useFlowStore((s) => s.nodeDefinitions);
   const updateNodeDefinition = useFlowStore((s) => s.updateNodeDefinition);
+
+  const { t, lang, tCat } = useI18n();
+  const billingOptions = getBillingOptions(lang);
 
   // Local editable state: array of { id, label, billing, priceStr }
   const [rows, setRows] = useState<
@@ -50,7 +54,7 @@ export function BulkPriceEditor({ onClose }: { onClose: () => void }) {
       <div className="bg-white rounded-xl shadow-2xl w-[700px] max-h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200">
-          <h2 className="text-sm font-bold text-gray-800">一括単価編集</h2>
+          <h2 className="text-sm font-bold text-gray-800">{t('bulkPriceEditor')}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg leading-none">
             &times;
           </button>
@@ -65,14 +69,14 @@ export function BulkPriceEditor({ onClose }: { onClose: () => void }) {
                   className="inline-block w-2.5 h-2.5 rounded-full"
                   style={{ backgroundColor: CATEGORY_COLORS[cat] || DEFAULT_CATEGORY_COLOR }}
                 />
-                <span className="text-xs font-semibold text-gray-500">{cat}</span>
+                <span className="text-xs font-semibold text-gray-500">{tCat(cat)}</span>
               </div>
               <table className="w-full text-xs">
                 <thead>
                   <tr className="text-left text-gray-400 border-b border-gray-100">
-                    <th className="pb-1 font-medium w-[35%]">名前</th>
-                    <th className="pb-1 font-medium w-[25%]">課金タイプ</th>
-                    <th className="pb-1 font-medium w-[25%]">単価 (USD)</th>
+                    <th className="pb-1 font-medium w-[35%]">{t('name')}</th>
+                    <th className="pb-1 font-medium w-[25%]">{t('billingType')}</th>
+                    <th className="pb-1 font-medium w-[25%]">{t('unitPriceUsd')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -94,7 +98,7 @@ export function BulkPriceEditor({ onClose }: { onClose: () => void }) {
                             onChange={(e) => updateRow(idx, 'billing', e.target.value)}
                             className="w-full px-1.5 py-1 border border-gray-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-400"
                           >
-                            {BILLING_OPTIONS.map((opt) => (
+                            {billingOptions.map((opt) => (
                               <option key={opt.value} value={opt.value}>{opt.label}</option>
                             ))}
                           </select>
@@ -126,13 +130,13 @@ export function BulkPriceEditor({ onClose }: { onClose: () => void }) {
             onClick={onClose}
             className="px-3 py-1.5 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
           >
-            キャンセル
+            {t('cancel')}
           </button>
           <button
             onClick={handleSaveAll}
             className="px-3 py-1.5 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
           >
-            すべて保存
+            {t('saveAll')}
           </button>
         </div>
       </div>
