@@ -11,6 +11,7 @@ const BILLING_BADGE_COLORS: Record<BillingType, string> = {
   free: 'bg-gray-100 text-gray-500',
   custom: 'bg-orange-100 text-orange-700',
   tts: 'bg-purple-100 text-purple-700',
+  per_kchar: 'bg-pink-100 text-pink-700',
 };
 
 const ARROW_MARKER = { type: MarkerType.ArrowClosed as const, width: 16, height: 16 };
@@ -77,10 +78,11 @@ export function CostPanel() {
   const setExchangeRate = useFlowStore((s) => s.setExchangeRate);
   const setSelectedNodeId = useFlowStore((s) => s.setSelectedNodeId);
   const ttsConfigs = useFlowStore((s) => s.ttsConfigs);
+  const customChars = useFlowStore((s) => s.customChars);
 
   const { t } = useI18n();
 
-  const { items, total, perCall } = calculateCosts(nodes, monthlyCallCount, avgCallMinutes, customPrices, customDurations, getNodeDef, ttsConfigs);
+  const { items, total, perCall } = calculateCosts(nodes, monthlyCallCount, avgCallMinutes, customPrices, customDurations, getNodeDef, ttsConfigs, customChars);
 
   const formatPrice = (usd: number) => {
     if (currency === 'JPY') {
@@ -185,6 +187,11 @@ export function CostPanel() {
                   {item.ttsConfig && item.billing === 'tts' && (
                     <span className="px-1 py-0.5 rounded text-[10px] shrink-0 bg-purple-50 text-purple-600">
                       {TTS_TYPE_LABELS[item.ttsConfig.ttsType]} / {item.ttsConfig.chars.toLocaleString()}chars
+                    </span>
+                  )}
+                  {item.billing === 'per_kchar' && item.customChars !== undefined && (
+                    <span className="px-1 py-0.5 rounded text-[10px] shrink-0 bg-pink-50 text-pink-600">
+                      {item.customChars.toLocaleString()} chars
                     </span>
                   )}
                   {item.twilioUrl && (

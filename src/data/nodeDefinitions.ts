@@ -1,4 +1,4 @@
-export type BillingType = 'per_minute' | 'per_call' | 'free' | 'custom' | 'tts';
+export type BillingType = 'per_minute' | 'per_call' | 'free' | 'custom' | 'tts' | 'per_kchar';
 
 export type TtsVoiceType = 'basic' | 'standard' | 'neural' | 'generative';
 
@@ -101,8 +101,8 @@ export const DEFAULT_NODE_DEFINITIONS: NodeDefinition[] = [
   { id: 'ci_stream',    label: 'Transcription (Streaming)',     labelEn: 'Transcription (Streaming)',     category: 'Conversational Intelligence', billing: 'per_minute', unitPrice: 0.027,  twilioUrl: 'https://www.twilio.com/ja-jp/voice/intelligence' },
   { id: 'ci_lo_std',    label: 'Language Operator (Standard)',  labelEn: 'Language Operator (Standard)',  category: 'Conversational Intelligence', billing: 'per_minute', unitPrice: 0.0040, twilioUrl: 'https://www.twilio.com/ja-jp/voice/intelligence' },
   { id: 'ci_lo_text',   label: 'Language Operator (Text Analysis)', labelEn: 'Language Operator (Text Analysis)', category: 'Conversational Intelligence', billing: 'per_minute', unitPrice: 0.0035, twilioUrl: 'https://www.twilio.com/ja-jp/voice/intelligence' },
-  { id: 'ci_gen_input', label: 'Generative Operator (Input)',   labelEn: 'Generative Operator (Input)',   category: 'Conversational Intelligence', billing: 'custom',     unitPrice: 0.002,  twilioUrl: 'https://www.twilio.com/ja-jp/voice/intelligence', note: '/1k chars' },
-  { id: 'ci_gen_output', label: 'Generative Operator (Output)', labelEn: 'Generative Operator (Output)', category: 'Conversational Intelligence', billing: 'custom',     unitPrice: 0.018,  twilioUrl: 'https://www.twilio.com/ja-jp/voice/intelligence', note: '/1k chars' },
+  { id: 'ci_gen_input', label: 'Generative Operator (Input)',   labelEn: 'Generative Operator (Input)',   category: 'Conversational Intelligence', billing: 'per_kchar',  unitPrice: 0.002,  twilioUrl: 'https://www.twilio.com/ja-jp/voice/intelligence' },
+  { id: 'ci_gen_output', label: 'Generative Operator (Output)', labelEn: 'Generative Operator (Output)', category: 'Conversational Intelligence', billing: 'per_kchar',  unitPrice: 0.018,  twilioUrl: 'https://www.twilio.com/ja-jp/voice/intelligence' },
   // 転送
   { id: 'fwdfx',    label: '転送先 (固定)',    labelEn: 'Forward To (Landline)',      category: '転送',           billing: 'free', unitPrice: 0 },
   { id: 'fwdmb',    label: '転送先 (携帯)',    labelEn: 'Forward To (Mobile)',        category: '転送',           billing: 'free', unitPrice: 0 },
@@ -133,6 +133,7 @@ export const BILLING_LABELS: Record<BillingType, string> = {
   free: 'Free',
   custom: 'Custom',
   tts: 'TTS',
+  per_kchar: '/1k chars',
 };
 
 export const BILLING_OPTIONS: { value: BillingType; label: string }[] = [
@@ -141,6 +142,7 @@ export const BILLING_OPTIONS: { value: BillingType; label: string }[] = [
   { value: 'free',       label: '無料 (free)' },
   { value: 'custom',     label: 'カスタム (custom)' },
   { value: 'tts',        label: 'TTS' },
+  { value: 'per_kchar',  label: '/1k文字 (per 1k chars)' },
 ];
 
 import type { Language } from '../i18n/translations';
@@ -152,6 +154,7 @@ export function getBillingOptions(lang: Language): { value: BillingType; label: 
       { value: 'free',       label: 'Free' },
       { value: 'custom',     label: 'Custom' },
       { value: 'tts',        label: 'TTS' },
+      { value: 'per_kchar',  label: '/1k chars' },
     ];
   }
   return BILLING_OPTIONS;

@@ -60,6 +60,11 @@ function TwilioNodeComponent({ data, selected }: NodeProps) {
                 {customDurationMinutes}min/call
               </div>
             )}
+            {billing === 'per_kchar' && (data.customChars as number | undefined) !== undefined && (
+              <div className="text-[10px] text-pink-500 mt-0.5 font-medium">
+                {(data.customChars as number).toLocaleString()} chars/call
+              </div>
+            )}
           </>
         )}
       </div>

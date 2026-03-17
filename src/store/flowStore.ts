@@ -20,6 +20,7 @@ export interface SavedFlow {
   customPrices: Record<string, number>;
   customDurations: Record<string, number>;
   ttsConfigs?: Record<string, TtsConfig>;
+  customChars?: Record<string, number>;
   savedAt: number;
 }
 
@@ -52,6 +53,7 @@ interface FlowState {
   customPrices: Record<string, number>;
   customDurations: Record<string, number>;
   ttsConfigs: Record<string, TtsConfig>;
+  customChars: Record<string, number>;
 
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
@@ -73,6 +75,8 @@ interface FlowState {
   removeCustomDuration: (instanceId: string) => void;
   setTtsConfig: (instanceId: string, config: TtsConfig) => void;
   removeTtsConfig: (instanceId: string) => void;
+  setCustomChars: (instanceId: string, chars: number) => void;
+  removeCustomChars: (instanceId: string) => void;
   addNodeDefinition: (def: NodeDefinition) => void;
   updateNodeDefinition: (id: string, updates: Partial<Omit<NodeDefinition, 'id'>>) => void;
   deleteNodeDefinition: (id: string) => void;
@@ -114,6 +118,7 @@ export const useFlowStore = create<FlowState>()(
       customPrices: {},
       customDurations: {},
       ttsConfigs: {},
+      customChars: {},
 
       onNodesChange: (changes) => {
         set({ nodes: applyNodeChanges(changes, get().nodes) });
@@ -158,6 +163,12 @@ export const useFlowStore = create<FlowState>()(
         const { [instanceId]: _, ...rest } = get().ttsConfigs;
         set({ ttsConfigs: rest });
       },
+      setCustomChars: (instanceId, chars) =>
+        set({ customChars: { ...get().customChars, [instanceId]: chars } }),
+      removeCustomChars: (instanceId) => {
+        const { [instanceId]: _, ...rest } = get().customChars;
+        set({ customChars: rest });
+      },
       addNodeDefinition: (def) =>
         set({ nodeDefinitions: [...get().nodeDefinitions, def] }),
       updateNodeDefinition: (id, updates) =>
@@ -176,9 +187,9 @@ export const useFlowStore = create<FlowState>()(
         set({ nodeDefinitions: [...DEFAULT_NODE_DEFINITIONS] }),
       getSavedFlows: () => loadSavedFlows(),
       saveCurrentFlow: (name) => {
-        const { nodes, edges, customPrices, customDurations, ttsConfigs } = get();
+        const { nodes, edges, customPrices, customDurations, ttsConfigs, customChars } = get();
         const flows = loadSavedFlows();
-        flows.push({ name, nodes, edges, customPrices, customDurations, ttsConfigs, savedAt: Date.now() });
+        flows.push({ name, nodes, edges, customPrices, customDurations, ttsConfigs, customChars, savedAt: Date.now() });
         persistSavedFlows(flows);
       },
       loadSavedFlow: (index) => {
@@ -191,6 +202,7 @@ export const useFlowStore = create<FlowState>()(
           customPrices: flow.customPrices || {},
           customDurations: flow.customDurations || {},
           ttsConfigs: flow.ttsConfigs || {},
+          customChars: flow.customChars || {},
           selectedNodeId: null,
         });
       },
@@ -206,7 +218,7 @@ export const useFlowStore = create<FlowState>()(
           ),
         }),
       clearAll: () =>
-        set({ nodes: [], edges: [], selectedNodeId: null, customPrices: {}, customDurations: {}, ttsConfigs: {} }),
+        set({ nodes: [], edges: [], selectedNodeId: null, customPrices: {}, customDurations: {}, ttsConfigs: {}, customChars: {} }),
     }),
     {
       name: 'twilio-cost-calc',

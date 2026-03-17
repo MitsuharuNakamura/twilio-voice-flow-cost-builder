@@ -14,6 +14,7 @@ export interface CostLineItem {
   customPrice?: number;
   customDuration?: number;
   ttsConfig?: TtsConfig;
+  customChars?: number;
 }
 
 export function calculateCosts(
@@ -24,6 +25,7 @@ export function calculateCosts(
   customDurations: Record<string, number>,
   getNodeDefinition: (defId: string) => NodeDefinition | undefined,
   ttsConfigs?: Record<string, TtsConfig>,
+  customChars?: Record<string, number>,
 ): { items: CostLineItem[]; total: number; perCall: number } {
   const items: CostLineItem[] = [];
 
@@ -49,6 +51,12 @@ export function calculateCosts(
       case 'custom':
         monthlyCost = unitPrice * monthlyCallCount;
         break;
+      case 'per_kchar': {
+        const chars = customChars?.[node.id] ?? 1000;
+        const kBlocks = Math.ceil(chars / 1000);
+        monthlyCost = unitPrice * kBlocks * monthlyCallCount;
+        break;
+      }
       case 'tts': {
         if (ttsConfig) {
           const blocks = Math.ceil(ttsConfig.chars / 100) || 0;
@@ -76,6 +84,7 @@ export function calculateCosts(
       customPrice: customPrices[node.id] !== undefined ? customPrices[node.id] : undefined,
       customDuration: customDurations[node.id] !== undefined ? customDurations[node.id] : undefined,
       ttsConfig,
+      customChars: customChars?.[node.id],
     });
   }
 

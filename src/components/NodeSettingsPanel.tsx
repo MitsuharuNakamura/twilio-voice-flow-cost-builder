@@ -108,6 +108,8 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
   const setCustomDuration = useFlowStore((s) => s.setCustomDuration);
   const removeCustomDuration = useFlowStore((s) => s.removeCustomDuration);
   const setTtsConfig = useFlowStore((s) => s.setTtsConfig);
+  const customCharsStore = useFlowStore((s) => s.customChars);
+  const setCustomChars = useFlowStore((s) => s.setCustomChars);
   const updateNodeData = useFlowStore((s) => s.updateNodeData);
 
   const { t, tNode } = useI18n();
@@ -121,10 +123,12 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
   const hasCustomDuration = node ? customDurations[node.id] !== undefined : false;
   const currentDuration = node ? (customDurations[node.id] ?? avgCallMinutes) : avgCallMinutes;
   const ttsConfig = node ? ttsConfigs[node.id] : undefined;
+  const currentCustomChars = node ? (customCharsStore[node.id] ?? 1000) : 1000;
 
   const [priceStr, setPriceStr] = useState('');
   const [durationStr, setDurationStr] = useState('');
   const [ttsCharsStr, setTtsCharsStr] = useState('');
+  const [kcharStr, setKcharStr] = useState('');
 
   useEffect(() => {
     setPriceStr(String(currentPriceUsd));
@@ -138,10 +142,15 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
     setTtsCharsStr(String(ttsConfig?.chars ?? 200));
   }, [nodeId, ttsConfig?.chars]);
 
+  useEffect(() => {
+    setKcharStr(String(currentCustomChars));
+  }, [nodeId, currentCustomChars]);
+
   if (!node || !def) return null;
 
   const displayLabel = tNode(def.id, def.label, def.labelEn);
   const isTts = def.billing === 'tts';
+  const isPerKchar = def.billing === 'per_kchar';
 
   // TTS calculated info
   const currentTtsType = ttsConfig?.ttsType ?? 'standard';
@@ -175,7 +184,54 @@ function TwilioSettingsPanel({ nodeId }: { nodeId: string }) {
         )}
       </div>
 
-      {isTts ? (
+      {isPerKchar ? (
+        <>
+          {/* Per 1k chars: character count input */}
+          <div className="mb-2">
+            <label className="text-xs text-gray-600 block mb-1">
+              {t('ttsCharsPerCall')}
+            </label>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={kcharStr}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === '' || /^[0-9]*$/.test(v)) {
+                  setKcharStr(v);
+                  const val = parseInt(v);
+                  if (!isNaN(val) && val >= 0) {
+                    setCustomChars(node.id, val);
+                  }
+                }
+              }}
+              onBlur={() => {
+                const val = parseInt(kcharStr);
+                if (isNaN(val) || kcharStr === '') {
+                  setKcharStr(String(currentCustomChars));
+                }
+              }}
+              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
+            />
+          </div>
+
+          {/* Per 1k chars: price summary */}
+          <div className="mb-2 p-2 bg-pink-50 rounded text-xs space-y-1">
+            <div className="flex justify-between text-gray-600">
+              <span>{t('unitPriceUsd')}</span>
+              <span>${def.unitPrice.toFixed(4)} /1k chars</span>
+            </div>
+            <div className="flex justify-between text-gray-600">
+              <span>{t('ttsBlocks')} (1k chars)</span>
+              <span>{Math.ceil(currentCustomChars / 1000)}</span>
+            </div>
+            <div className="flex justify-between font-medium text-pink-700">
+              <span>{t('ttsPerCall')}</span>
+              <span>${(Math.ceil(currentCustomChars / 1000) * def.unitPrice).toFixed(4)}</span>
+            </div>
+          </div>
+        </>
+      ) : isTts ? (
         <>
           {/* TTS Voice Type */}
           <div className="mb-2">
