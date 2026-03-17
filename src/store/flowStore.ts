@@ -11,6 +11,7 @@ import {
   addEdge,
 } from '@xyflow/react';
 import { DEFAULT_NODE_DEFINITIONS, type NodeDefinition, type TtsConfig } from '../data/nodeDefinitions';
+import type { EditionConfig, EditionType } from '../data/editions';
 import type { Language } from '../i18n/translations';
 
 export interface SavedFlow {
@@ -54,6 +55,7 @@ interface FlowState {
   customDurations: Record<string, number>;
   ttsConfigs: Record<string, TtsConfig>;
   customChars: Record<string, number>;
+  editionConfig: EditionConfig;
 
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
@@ -77,6 +79,8 @@ interface FlowState {
   removeTtsConfig: (instanceId: string) => void;
   setCustomChars: (instanceId: string, chars: number) => void;
   removeCustomChars: (instanceId: string) => void;
+  setEdition: (edition: EditionType) => void;
+  toggleAddon: (addonId: string) => void;
   addNodeDefinition: (def: NodeDefinition) => void;
   updateNodeDefinition: (id: string, updates: Partial<Omit<NodeDefinition, 'id'>>) => void;
   deleteNodeDefinition: (id: string) => void;
@@ -98,6 +102,7 @@ const PERSISTED_KEYS = [
   'currency',
   'exchangeRate',
   'language',
+  'editionConfig',
 ] as const;
 
 type PersistedState = Pick<FlowState, (typeof PERSISTED_KEYS)[number]>;
@@ -119,6 +124,7 @@ export const useFlowStore = create<FlowState>()(
       customDurations: {},
       ttsConfigs: {},
       customChars: {},
+      editionConfig: { edition: 'none' as EditionType, addons: [] },
 
       onNodesChange: (changes) => {
         set({ nodes: applyNodeChanges(changes, get().nodes) });
@@ -168,6 +174,15 @@ export const useFlowStore = create<FlowState>()(
       removeCustomChars: (instanceId) => {
         const { [instanceId]: _, ...rest } = get().customChars;
         set({ customChars: rest });
+      },
+      setEdition: (edition) =>
+        set({ editionConfig: { ...get().editionConfig, edition } }),
+      toggleAddon: (addonId) => {
+        const current = get().editionConfig;
+        const addons = current.addons.includes(addonId)
+          ? current.addons.filter((id) => id !== addonId)
+          : [...current.addons, addonId];
+        set({ editionConfig: { ...current, addons } });
       },
       addNodeDefinition: (def) =>
         set({ nodeDefinitions: [...get().nodeDefinitions, def] }),
@@ -229,6 +244,7 @@ export const useFlowStore = create<FlowState>()(
         currency: state.currency,
         exchangeRate: state.exchangeRate,
         language: state.language,
+        editionConfig: state.editionConfig,
       }),
       merge: (persisted, current) => {
         const p = persisted as Partial<PersistedState> | undefined;

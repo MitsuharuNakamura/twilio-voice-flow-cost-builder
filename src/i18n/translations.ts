@@ -139,6 +139,18 @@ const translations = {
   catForwarding: { ja: '転送', en: 'Forwarding' },
   catExternal: { ja: '外部連携', en: 'External Integration' },
 
+  // ===== Enterprise Editions =====
+  enterpriseEditions: { ja: 'Enterprise Editions', en: 'Enterprise Editions' },
+  edition: { ja: 'エディション', en: 'Edition' },
+  addons: { ja: '個別機能（アドオン）', en: 'Add-ons' },
+  usageTotal: { ja: '利用料合計', en: 'Usage Total' },
+  editionFee: { ja: 'エディション費用', en: 'Edition Fee' },
+  editionMinFee: { ja: '最低月額', en: 'Min. Monthly' },
+  editionUsageFee: { ja: '利用料率', en: 'Usage Rate' },
+  addonFee: { ja: 'アドオン費用', en: 'Add-on Fee' },
+  grandTotal: { ja: '総合計 (月額)', en: 'Grand Total (Monthly)' },
+  applied: { ja: '適用', en: 'Applied' },
+
   // ===== Language toggle =====
   language: { ja: '言語', en: 'Language' },
 } as const;

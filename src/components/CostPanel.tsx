@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { MarkerType } from '@xyflow/react';
 import { useFlowStore } from '../store/flowStore';
 import { calculateCosts } from '../utils/costCalculator';
 import { BILLING_LABELS, TTS_TYPE_LABELS, type BillingType } from '../data/nodeDefinitions';
+import { EDITIONS, ADDONS, calculateEditionCost } from '../data/editions';
 import { NodeSettingsPanel } from './NodeSettingsPanel';
 import { useI18n } from '../i18n';
 
@@ -79,10 +81,19 @@ export function CostPanel() {
   const setSelectedNodeId = useFlowStore((s) => s.setSelectedNodeId);
   const ttsConfigs = useFlowStore((s) => s.ttsConfigs);
   const customChars = useFlowStore((s) => s.customChars);
+  const editionConfig = useFlowStore((s) => s.editionConfig);
+  const setEdition = useFlowStore((s) => s.setEdition);
+  const toggleAddon = useFlowStore((s) => s.toggleAddon);
 
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+
+  const [editionOpen, setEditionOpen] = useState(false);
 
   const { items, total, perCall } = calculateCosts(nodes, monthlyCallCount, avgCallMinutes, customPrices, customDurations, getNodeDef, ttsConfigs, customChars);
+
+  const editionResult = calculateEditionCost(editionConfig, total);
+  const hasEdition = editionConfig.edition !== 'none' || editionConfig.addons.length > 0;
+  const grandTotal = total + editionResult.totalEditionCost;
 
   const formatPrice = (usd: number) => {
     if (currency === 'JPY') {
@@ -91,6 +102,8 @@ export function CostPanel() {
     }
     return `$${usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
   };
+
+  const selectedEditionDef = EDITIONS.find((e) => e.id === editionConfig.edition);
 
   return (
     <div className="w-72 bg-gray-50 border-l border-gray-200 flex flex-col shrink-0 overflow-y-auto">
@@ -157,6 +170,106 @@ export function CostPanel() {
         )}
       </div>
 
+      {/* Enterprise Editions */}
+      <div className="border-b border-gray-200">
+        <button
+          onClick={() => setEditionOpen(!editionOpen)}
+          className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          <span className="flex items-center gap-1">
+            <span
+              className="text-[10px] text-gray-400 w-3 text-center transition-transform"
+              style={{ transform: editionOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+            >
+              ▼
+            </span>
+            {t('enterpriseEditions')}
+          </span>
+          {hasEdition && (
+            <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">
+              {formatPrice(editionResult.totalEditionCost)}
+            </span>
+          )}
+        </button>
+
+        {editionOpen && (
+          <div className="px-3 pb-3 space-y-3">
+            {/* Edition radio */}
+            <div>
+              <label className="text-[10px] text-gray-500 block mb-1">{t('edition')}</label>
+              <div className="space-y-1">
+                {EDITIONS.map((ed) => (
+                  <label
+                    key={ed.id}
+                    className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer hover:text-gray-800"
+                  >
+                    <input
+                      type="radio"
+                      name="edition"
+                      checked={editionConfig.edition === ed.id}
+                      onChange={() => setEdition(ed.id)}
+                      className="text-blue-500"
+                    />
+                    <span className="flex-1">
+                      {lang === 'ja' ? ed.label : ed.labelEn}
+                    </span>
+                    {ed.id !== 'none' && (
+                      <span className="text-[10px] text-gray-400 shrink-0">
+                        ${ed.minFee.toLocaleString()}/{ed.usagePercent}%
+                      </span>
+                    )}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Edition cost detail */}
+            {editionConfig.edition !== 'none' && selectedEditionDef && (
+              <div className="p-2 bg-amber-50 rounded text-xs space-y-1">
+                <div className="flex justify-between text-gray-600">
+                  <span>{t('editionMinFee')}</span>
+                  <span>${selectedEditionDef.minFee.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>{t('editionUsageFee')} ({selectedEditionDef.usagePercent}%)</span>
+                  <span>{formatPrice(editionResult.editionUsageFee)}</span>
+                </div>
+                <div className="flex justify-between font-medium text-amber-700">
+                  <span>→ {t('applied')}</span>
+                  <span>{formatPrice(editionResult.editionCost)}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Addons */}
+            <div>
+              <label className="text-[10px] text-gray-500 block mb-1">{t('addons')}</label>
+              <div className="space-y-1">
+                {ADDONS.map((addon) => (
+                  <label
+                    key={addon.id}
+                    className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer hover:text-gray-800"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={editionConfig.addons.includes(addon.id)}
+                      onChange={() => toggleAddon(addon.id)}
+                      className="rounded text-blue-500"
+                    />
+                    <span className="flex-1 truncate">
+                      {lang === 'ja' ? addon.label : addon.labelEn}
+                    </span>
+                    <span className="text-[10px] text-gray-400 shrink-0">
+                      ${addon.fee.toLocaleString()}/mo
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Cost breakdown */}
       <div className="p-3 flex-1">
         <h3 className="text-xs font-semibold text-gray-500 mb-2">{t('costBreakdown')}</h3>
@@ -213,13 +326,39 @@ export function CostPanel() {
           </div>
         )}
 
+        {/* Totals */}
         {items.length > 0 && (
-          <div className="mt-3 pt-2 border-t border-gray-200">
-            <div className="flex justify-between text-sm font-bold text-gray-800">
-              <span>{t('totalMonthly')}</span>
-              <span>{formatPrice(total)}</span>
-            </div>
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <div className="mt-3 pt-2 border-t border-gray-200 space-y-1">
+            {hasEdition ? (
+              <>
+                <div className="flex justify-between text-xs text-gray-600">
+                  <span>{t('usageTotal')}</span>
+                  <span>{formatPrice(total)}</span>
+                </div>
+                {editionConfig.edition !== 'none' && (
+                  <div className="flex justify-between text-xs text-amber-600">
+                    <span>{t('editionFee')} ({lang === 'ja' ? selectedEditionDef?.label : selectedEditionDef?.labelEn})</span>
+                    <span>{formatPrice(editionResult.editionCost)}</span>
+                  </div>
+                )}
+                {editionResult.addonCost > 0 && (
+                  <div className="flex justify-between text-xs text-amber-600">
+                    <span>{t('addonFee')}</span>
+                    <span>{formatPrice(editionResult.addonCost)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm font-bold text-gray-800 pt-1 border-t border-gray-100">
+                  <span>{t('grandTotal')}</span>
+                  <span>{formatPrice(grandTotal)}</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex justify-between text-sm font-bold text-gray-800">
+                <span>{t('totalMonthly')}</span>
+                <span>{formatPrice(total)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-xs text-gray-500">
               <span>{t('perCall')}</span>
               <span>{formatPrice(perCall)}</span>
             </div>
