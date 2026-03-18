@@ -33,6 +33,21 @@
 - **Twilioサービス**: Conference Calls ($0.0018/participant per min), 留守番電話検出/AMD ($0.0075/call), Voice Insights ($0.0024/min), TTS, Call Recording (Recording $0.0025/min, Storage $0.0005/min, Transcription $0.0500/min)
 - **Conversational Intelligence** (新カテゴリ・ピンク): Transcription Batch/Streaming, Language Operator Standard/Text Analysis, Generative Operator Input/Output
 
+### 電話番号の月額維持費
+
+- 右サイドバーに「電話番号」折りたたみセクションを追加
+- 48カ国・100件の電話番号データ（Local/National/Toll-Free/Mobile）
+- 国選択（検索付きdatalist）→ 番号タイプ選択 → 保有数入力で追加
+- 登録済み番号リスト（保有数インライン編集・削除可能・小計表示）
+- 総合計に電話番号維持費を加算
+- phoneNumbers設定はlocalStorageに永続化
+
+### ノードパレットの検索 & デフォルト折りたたみ
+
+- ノードパレットに検索フィルターを追加（ノード名JA/EN・カテゴリ名でリアルタイム絞り込み）
+- 検索中はマッチするカテゴリのみ表示・自動展開、件数を「N/全N」で表示
+- 全カテゴリをデフォルト折りたたみ状態に変更
+
 ### Toll-Free ID重複修正
 
 - `twlocal` (重複) → `twtollfree` にIDを修正
