@@ -83,7 +83,7 @@ export const DEFAULT_NODE_DEFINITIONS: NodeDefinition[] = [
   { id: 'studio',   label: 'Twilio Studio',    labelEn: 'Twilio Studio',              category: 'Twilioサービス', billing: 'per_call',   unitPrice: 0.01,   twilioUrl: 'https://www.twilio.com/ja-jp/studio/pricing' },
   { id: 'crelay',   label: 'ConversationRelay', labelEn: 'ConversationRelay',         category: 'Twilioサービス', billing: 'per_minute', unitPrice: 0.07,  twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing' },
   { id: 'mstream',  label: 'Media Streams',    labelEn: 'Media Streams',              category: 'Twilioサービス', billing: 'per_minute', unitPrice: 0.0040, twilioUrl: 'https://www.twilio.com/ja-jp/voice/pricing' },
-  { id: 'verify',   label: 'Twilio Verify',    labelEn: 'Twilio Verify',              category: 'Twilioサービス', billing: 'per_call',   unitPrice: 0.05,   twilioUrl: 'https://www.twilio.com/ja-jp/user-authentication-identity/verify/pricing' },
+  { id: 'twiml',    label: 'TwiML',             labelEn: 'TwiML',                      category: 'Twilioサービス', billing: 'free',       unitPrice: 0 },
   { id: 'taskr',    label: 'TaskRouter',       labelEn: 'TaskRouter',                 category: 'Twilioサービス', billing: 'per_call',   unitPrice: 0.01,   twilioUrl: 'https://www.twilio.com/ja-jp/taskrouter/pricing' },
   { id: 'flex',     label: 'Twilio Flex',      labelEn: 'Twilio Flex',                category: 'Twilioサービス', billing: 'custom',     unitPrice: 0,      twilioUrl: 'https://www.twilio.com/ja-jp/flex/pricing' },
   // TTS
