@@ -4,6 +4,7 @@ import { useFlowStore } from '../store/flowStore';
 import { calculateCosts } from '../utils/costCalculator';
 import { BILLING_LABELS, TTS_TYPE_LABELS, type BillingType } from '../data/nodeDefinitions';
 import { EDITIONS, ADDONS, SUPPORT_PLANS, calculateEditionCost } from '../data/editions';
+import { PHONE_COUNTRIES, PHONE_NUMBER_DEFS, getPhoneTypesForCountry, calculatePhoneNumberCost } from '../data/phoneNumbers';
 import { NodeSettingsPanel } from './NodeSettingsPanel';
 import { useI18n } from '../i18n';
 
@@ -85,19 +86,31 @@ export function CostPanel() {
   const setEdition = useFlowStore((s) => s.setEdition);
   const toggleAddon = useFlowStore((s) => s.toggleAddon);
   const setSupportPlan = useFlowStore((s) => s.setSupportPlan);
+  const phoneNumbers = useFlowStore((s) => s.phoneNumbers);
+  const addPhoneNumber = useFlowStore((s) => s.addPhoneNumber);
+  const updatePhoneNumberCount = useFlowStore((s) => s.updatePhoneNumberCount);
+  const removePhoneNumber = useFlowStore((s) => s.removePhoneNumber);
 
   const { t, lang, tNode } = useI18n();
 
   const [editionOpen, setEditionOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
+  const [phoneOpen, setPhoneOpen] = useState(false);
+  const [phoneAddOpen, setPhoneAddOpen] = useState(false);
+  const [phoneCountry, setPhoneCountry] = useState(PHONE_COUNTRIES[0]?.country ?? '');
+  const [phoneType, setPhoneType] = useState('');
+  const [phoneCountStr, setPhoneCountStr] = useState('1');
+  const [phoneSearch, setPhoneSearch] = useState('');
 
   const { items, total, perCall } = calculateCosts(nodes, monthlyCallCount, avgCallMinutes, customPrices, customDurations, getNodeDef, ttsConfigs, customChars);
 
   const editionResult = calculateEditionCost(editionConfig, total);
+  const phoneCost = calculatePhoneNumberCost(phoneNumbers);
   const hasEdition = editionConfig.edition !== 'none' || editionConfig.addons.length > 0;
   const hasSupportPlan = editionConfig.supportPlan !== 'developer';
-  const hasExtras = hasEdition || hasSupportPlan;
-  const grandTotal = total + editionResult.totalEditionCost;
+  const hasPhoneNumbers = phoneNumbers.length > 0;
+  const hasExtras = hasEdition || hasSupportPlan || hasPhoneNumbers;
+  const grandTotal = total + editionResult.totalEditionCost + phoneCost;
 
   const formatPrice = (usd: number) => {
     if (currency === 'JPY') {
@@ -344,6 +357,170 @@ export function CostPanel() {
         )}
       </div>
 
+      {/* Phone Numbers */}
+      <div className="border-b border-gray-200">
+        <button
+          onClick={() => setPhoneOpen(!phoneOpen)}
+          className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          <span className="flex items-center gap-1">
+            <span
+              className="text-[10px] text-gray-400 w-3 text-center transition-transform"
+              style={{ transform: phoneOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+            >
+              ▼
+            </span>
+            {t('phoneNumbers')}
+          </span>
+          {hasPhoneNumbers && (
+            <span className="text-[10px] bg-cyan-100 text-cyan-700 px-1.5 py-0.5 rounded">
+              {formatPrice(phoneCost)}
+            </span>
+          )}
+        </button>
+
+        {phoneOpen && (
+          <div className="px-3 pb-3 space-y-2">
+            {/* Add form */}
+            {phoneAddOpen ? (
+              <div className="p-2 bg-white border border-gray-200 rounded space-y-1.5">
+                <div>
+                  <label className="text-[10px] text-gray-500">{t('country')}</label>
+                  <input
+                    list="phone-country-list"
+                    value={phoneSearch || phoneCountry}
+                    onChange={(e) => {
+                      setPhoneSearch(e.target.value);
+                      const match = PHONE_COUNTRIES.find(
+                        (c) => c.country === e.target.value || `${c.country} (+${c.countryCode})` === e.target.value,
+                      );
+                      if (match) {
+                        setPhoneCountry(match.country);
+                        setPhoneSearch('');
+                        const types = getPhoneTypesForCountry(match.country);
+                        if (types.length > 0) setPhoneType(types[0].id);
+                      }
+                    }}
+                    onFocus={() => setPhoneSearch('')}
+                    className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  />
+                  <datalist id="phone-country-list">
+                    {PHONE_COUNTRIES.map((c) => (
+                      <option key={c.iso + c.country} value={c.country}>
+                        +{c.countryCode}
+                      </option>
+                    ))}
+                  </datalist>
+                </div>
+                <div>
+                  <label className="text-[10px] text-gray-500">{t('numberType')}</label>
+                  <select
+                    value={phoneType}
+                    onChange={(e) => setPhoneType(e.target.value)}
+                    className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  >
+                    {getPhoneTypesForCountry(phoneCountry).map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.type} (${d.monthlyFee}/mo)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] text-gray-500">{t('quantity')}</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={phoneCountStr}
+                    onChange={(e) => {
+                      if (e.target.value === '' || /^[0-9]+$/.test(e.target.value)) setPhoneCountStr(e.target.value);
+                    }}
+                    className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  />
+                </div>
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => {
+                      const count = parseInt(phoneCountStr) || 1;
+                      if (phoneType && count > 0) {
+                        const existing = phoneNumbers.find((p) => p.defId === phoneType);
+                        if (existing) {
+                          updatePhoneNumberCount(phoneType, existing.count + count);
+                        } else {
+                          addPhoneNumber({ defId: phoneType, count });
+                        }
+                        setPhoneAddOpen(false);
+                        setPhoneCountStr('1');
+                      }
+                    }}
+                    disabled={!phoneType}
+                    className="flex-1 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-40"
+                  >
+                    {t('add')}
+                  </button>
+                  <button
+                    onClick={() => setPhoneAddOpen(false)}
+                    className="flex-1 px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+                  >
+                    {t('cancel')}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setPhoneAddOpen(true);
+                  const types = getPhoneTypesForCountry(phoneCountry);
+                  if (types.length > 0 && !phoneType) setPhoneType(types[0].id);
+                }}
+                className="w-full px-2 py-1 text-xs text-blue-500 border border-dashed border-blue-300 rounded hover:bg-blue-50"
+              >
+                {t('addNumber')}
+              </button>
+            )}
+
+            {/* Registered numbers */}
+            {phoneNumbers.length > 0 && (
+              <div className="space-y-1">
+                {phoneNumbers.map((entry) => {
+                  const def = PHONE_NUMBER_DEFS.find((d) => d.id === entry.defId);
+                  if (!def) return null;
+                  return (
+                    <div key={entry.defId} className="flex items-center gap-1 text-xs bg-white px-2 py-1.5 rounded border border-gray-100">
+                      <span className="text-[10px] text-gray-400 shrink-0">{def.iso}</span>
+                      <span className="truncate flex-1 text-gray-700">{def.country} {def.type}</span>
+                      <span className="text-[10px] text-gray-400 shrink-0">${def.monthlyFee}</span>
+                      <span className="text-gray-400 shrink-0">×</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={entry.count}
+                        onChange={(e) => {
+                          const v = parseInt(e.target.value);
+                          if (!isNaN(v) && v > 0) updatePhoneNumberCount(entry.defId, v);
+                        }}
+                        className="w-8 px-1 py-0.5 text-xs text-center border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
+                      />
+                      <span className="text-gray-600 shrink-0 w-14 text-right">${(def.monthlyFee * entry.count).toFixed(2)}</span>
+                      <button
+                        onClick={() => removePhoneNumber(entry.defId)}
+                        className="text-[10px] text-gray-300 hover:text-red-500 shrink-0 ml-0.5"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+                <div className="flex justify-between text-xs font-medium text-cyan-700 pt-1">
+                  <span>{t('subtotal')}</span>
+                  <span>{formatPrice(phoneCost)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Cost breakdown */}
       <div className="p-3 flex-1">
         <h3 className="text-xs font-semibold text-gray-500 mb-2">{t('costBreakdown')}</h3>
@@ -425,6 +602,12 @@ export function CostPanel() {
                   <div className="flex justify-between text-xs text-teal-600">
                     <span>{t('supportFee')}</span>
                     <span>{formatPrice(editionResult.supportCost)}</span>
+                  </div>
+                )}
+                {hasPhoneNumbers && (
+                  <div className="flex justify-between text-xs text-cyan-600">
+                    <span>{t('phoneNumberFee')}</span>
+                    <span>{formatPrice(phoneCost)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm font-bold text-gray-800 pt-1 border-t border-gray-100">

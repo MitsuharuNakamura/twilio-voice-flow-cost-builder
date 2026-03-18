@@ -12,6 +12,7 @@ import {
 } from '@xyflow/react';
 import { DEFAULT_NODE_DEFINITIONS, type NodeDefinition, type TtsConfig } from '../data/nodeDefinitions';
 import type { EditionConfig, EditionType, SupportPlanType } from '../data/editions';
+import type { PhoneNumberEntry } from '../data/phoneNumbers';
 import type { Language } from '../i18n/translations';
 
 export interface SavedFlow {
@@ -56,6 +57,7 @@ interface FlowState {
   ttsConfigs: Record<string, TtsConfig>;
   customChars: Record<string, number>;
   editionConfig: EditionConfig;
+  phoneNumbers: PhoneNumberEntry[];
 
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
@@ -82,6 +84,9 @@ interface FlowState {
   setEdition: (edition: EditionType) => void;
   toggleAddon: (addonId: string) => void;
   setSupportPlan: (plan: SupportPlanType) => void;
+  addPhoneNumber: (entry: PhoneNumberEntry) => void;
+  updatePhoneNumberCount: (defId: string, count: number) => void;
+  removePhoneNumber: (defId: string) => void;
   addNodeDefinition: (def: NodeDefinition) => void;
   updateNodeDefinition: (id: string, updates: Partial<Omit<NodeDefinition, 'id'>>) => void;
   deleteNodeDefinition: (id: string) => void;
@@ -104,6 +109,7 @@ const PERSISTED_KEYS = [
   'exchangeRate',
   'language',
   'editionConfig',
+  'phoneNumbers',
 ] as const;
 
 type PersistedState = Pick<FlowState, (typeof PERSISTED_KEYS)[number]>;
@@ -126,6 +132,7 @@ export const useFlowStore = create<FlowState>()(
       ttsConfigs: {},
       customChars: {},
       editionConfig: { edition: 'none' as EditionType, addons: [], supportPlan: 'developer' as SupportPlanType },
+      phoneNumbers: [],
 
       onNodesChange: (changes) => {
         set({ nodes: applyNodeChanges(changes, get().nodes) });
@@ -187,6 +194,12 @@ export const useFlowStore = create<FlowState>()(
       },
       setSupportPlan: (plan) =>
         set({ editionConfig: { ...get().editionConfig, supportPlan: plan } }),
+      addPhoneNumber: (entry) =>
+        set({ phoneNumbers: [...get().phoneNumbers, entry] }),
+      updatePhoneNumberCount: (defId, count) =>
+        set({ phoneNumbers: get().phoneNumbers.map((p) => p.defId === defId ? { ...p, count } : p) }),
+      removePhoneNumber: (defId) =>
+        set({ phoneNumbers: get().phoneNumbers.filter((p) => p.defId !== defId) }),
       addNodeDefinition: (def) =>
         set({ nodeDefinitions: [...get().nodeDefinitions, def] }),
       updateNodeDefinition: (id, updates) =>
@@ -248,6 +261,7 @@ export const useFlowStore = create<FlowState>()(
         exchangeRate: state.exchangeRate,
         language: state.language,
         editionConfig: state.editionConfig,
+        phoneNumbers: state.phoneNumbers,
       }),
       merge: (persisted, current) => {
         const p = persisted as Partial<PersistedState> | undefined;

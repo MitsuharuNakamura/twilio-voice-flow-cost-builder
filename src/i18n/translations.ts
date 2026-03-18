@@ -153,6 +153,17 @@ const translations = {
   supportPlan: { ja: 'サポートプラン', en: 'Support Plan' },
   supportFee: { ja: 'サポート費用', en: 'Support Fee' },
 
+  // ===== Phone Numbers =====
+  phoneNumbers: { ja: '電話番号', en: 'Phone Numbers' },
+  phoneNumberFee: { ja: '電話番号維持費', en: 'Phone Number Fee' },
+  searchCountry: { ja: '国・番号を検索...', en: 'Search country / number...' },
+  addNumber: { ja: '+ 番号を追加', en: '+ Add Number' },
+  country: { ja: '国', en: 'Country' },
+  numberType: { ja: 'タイプ', en: 'Type' },
+  quantity: { ja: '保有数', en: 'Qty' },
+  add: { ja: '追加', en: 'Add' },
+  subtotal: { ja: '小計', en: 'Subtotal' },
+
   // ===== Language toggle =====
   language: { ja: '言語', en: 'Language' },
 } as const;
